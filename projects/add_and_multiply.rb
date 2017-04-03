@@ -1,12 +1,9 @@
-# write a method that computes the sum of two positive integers,
-# without using the built-in `+` method for addition.
-# write a method that computes the product of two positive integers,
-# without using the built-in '*' method for multiplication.
+# addition and multiplication using the grade-school algorithms.
 
+# we work with strings to emphasize that we do not make use of any `built-in`
+# Ruby tools for making calculations with integers
 
-# tables for sums and products of single-digit integers
-
-SUM = {
+SUM_TABLE = {
   '0'  => { '0' => '0', '1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6', '7' => '7', '8' => '8', '9' => '9', '10' => '10' },
   '1'  => { '0' => '1', '1' => '2', '2' => '3', '3' => '4', '4' => '5', '5' => '6', '6' => '7', '7' => '8', '8' => '9', '9' => '10', '10' => '11' },
   '2'  => { '0' => '2', '1' => '3', '2' => '4', '3' => '5', '4' => '6', '5' => '7', '6' => '8', '7' => '9', '8' => '10', '9' => '11', '10' => '12' },
@@ -20,7 +17,7 @@ SUM = {
   '10' => { '0' => '10', '1' => '11', '2' => '12', '3' => '13', '4' => '14', '5' => '15', '6' => '16', '7' => '17', '8' => '18', '9' => '19', '10' => '20' }
 }
 
-PRODUCT = {
+PRODUCT_TABLE = {
   '0' => { '0' => '0', '1' => '0', '2' => '0', '3' => '0', '4' => '0', '5' => '0', '6' => '0', '7' => '0', '8' => '0', '9' => '0' },
   '1' => { '0' => '0', '1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6', '7'=> '7', '8' => '8', '9' => '9' },
   '2' => { '0' => '0', '1' => '2', '2' => '4', '3' => '6', '4' => '8', '5' => '10', '6' => '12', '7' => '14', '8' => '16', '9' => '18' },
@@ -46,7 +43,11 @@ def add(x, y)
   while x_digits != []
     current_x_digit = x_digits.pop
     current_y_digit = y_digits.pop
-    current_digits_sum = SUM[SUM[carry][current_x_digit]][current_y_digit]
+
+    current_x_digit_plus_carry = SUM_TABLE[carry][current_x_digit]
+    current_digits_sum =
+      SUM_TABLE[current_x_digit_plus_carry][current_y_digit]
+
     if current_digits_sum.size == 1
       result.unshift(current_digits_sum)
       carry = '0'
@@ -80,18 +81,18 @@ def multiply(x, y)
   x_digits = x.split('')
   y_digits = y.split('')
 
-  list_of_numbers_to_sum_up = []
+  summands = []
 
   position_counter = 0
 
   while y_digits != []
     current_y_digit = y_digits.pop
-    list_of_numbers_to_sum_up <<
-      multiply_by_digit(x_digits, current_y_digit, position_counter)
+    summands <<
+      multiply_by_digit(x_digits, current_y_digit, position_counter).join
     position_counter += 1
   end
 
-  sum_up(list_of_numbers_to_sum_up)
+  sum_up(summands)
 end
 
 def multiply_by_digit(digits, digit, position_counter)
@@ -101,7 +102,7 @@ def multiply_by_digit(digits, digit, position_counter)
   carry = '0'
 
   while index >= 0
-    current_result = add(PRODUCT[digits[index]][digit], carry)
+    current_result = add(PRODUCT_TABLE[digits[index]][digit], carry)
     if current_result.length == 1
       result.unshift(current_result)
       carry = '0'
@@ -113,7 +114,7 @@ def multiply_by_digit(digits, digit, position_counter)
     index -= 1
   end
   result.unshift(carry) unless carry == '0'
-  result.join
+  result
 end
 
 def sum_up(list_of_numbers)
@@ -125,6 +126,7 @@ def sum_up(list_of_numbers)
 end
 
 # test
+
 def test
   passed = true
   100.times do
