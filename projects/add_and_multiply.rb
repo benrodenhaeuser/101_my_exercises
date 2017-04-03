@@ -102,12 +102,12 @@ def multiply_by_digit(digits, digit, position_counter)
   carry = '0'
 
   while index >= 0
-    current_result = add(PRODUCT_TABLE[digits[index]][digit], carry)
-    if current_result.length == 1
-      result.unshift(current_result)
+    current_digit_result = add(PRODUCT_TABLE[digits[index]][digit], carry)
+    if current_digit_result.length == 1
+      result.unshift(current_digit_result)
       carry = '0'
     else
-      current_result_digits = current_result.split('')
+      current_result_digits = current_digit_result.split('')
       result.unshift(current_result_digits.last)
       carry = current_result_digits.first
     end
@@ -138,7 +138,7 @@ def test
     y_string = y.to_s
     my_product = multiply(x_string, y_string)
 
-    passed = false unless ruby_product == my_product.to_i
+    passed = false if ruby_product != my_product.to_i
   end
   puts 'passed test' if passed
 end
