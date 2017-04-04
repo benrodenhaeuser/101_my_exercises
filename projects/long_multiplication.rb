@@ -33,11 +33,10 @@ PRODUCT_TABLE = {
 # multiplication
 
 def multiply(x, y)
-  x_digits = digits(x)
-  y_digits = digits(y)
-
   summands = []
 
+  x_digits = digits(x)
+  y_digits = digits(y)
   position_counter = 0
 
   while y_digits != []
@@ -51,9 +50,9 @@ def multiply(x, y)
 end
 
 def multiply_by_digit(digits, digit, position_counter)
-  index = digits.size - 1
   result = []
-  position_counter.times { result.push('0') }
+
+  index = digits.size - 1
   carry = '0'
 
   while index >= 0
@@ -67,27 +66,32 @@ def multiply_by_digit(digits, digit, position_counter)
     end
     index -= 1
   end
+
   result.unshift(carry) unless carry == '0'
+  position_counter.times { result.push('0') }
+
   result
 end
 
 def sum_up(list_of_numbers)
   result = list_of_numbers.pop
+
   while list_of_numbers != []
     result = add(result, list_of_numbers.pop)
   end
+
   result
 end
 
 # addition
 
 def add(x, y)
+  result = []
+
   x_digits = digits(x)
   y_digits = digits(y)
   expand_to_same_length!(x_digits, y_digits)
-
   carry = '0'
-  result = []
 
   while x_digits != []
     current_x_digit = x_digits.pop
