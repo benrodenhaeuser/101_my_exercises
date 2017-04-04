@@ -1,7 +1,7 @@
-# addition and multiplication using the grade-school algorithms.
+# long multiplication, using the standard grade-school algorithm.
 
 # we work with strings to emphasize that we do not make use of any `built-in`
-# Ruby tools for making calculations with integers
+# Ruby methods for making calculations with integers
 
 SUM_TABLE = {
   '0'  => { '0' => '0', '1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6', '7' => '7', '8' => '8', '9' => '9', '10' => '10' },
@@ -30,56 +30,11 @@ PRODUCT_TABLE = {
   '9' => { '0' => '0', '1' => '9', '2' => '18', '3' => '27', '4' => '36', '5' => '45', '6' => '54', '7' => '63', '8' => '72', '9' => '81'}
 }
 
-# addition
-
-def add(x, y)
-  x_digits = x.split('')
-  y_digits = y.split('')
-  expand_to_same_length!(x_digits, y_digits)
-
-  carry = '0'
-  result = []
-
-  while x_digits != []
-    current_x_digit = x_digits.pop
-    current_y_digit = y_digits.pop
-
-    current_x_digit_plus_carry = SUM_TABLE[carry][current_x_digit]
-    current_digits_sum =
-      SUM_TABLE[current_x_digit_plus_carry][current_y_digit]
-
-    if current_digits_sum.size == 1
-      result.unshift(current_digits_sum)
-      carry = '0'
-    else
-      current_digits_sum_digits = current_digits_sum.split('')
-      result.unshift(current_digits_sum_digits.last)
-      carry = current_digits_sum_digits.first
-    end
-  end
-
-  result.unshift(carry) unless carry == '0'
-  result.join
-end
-
-def expand_to!(length, digits)
-  if digits.size < length
-    digits.unshift('0')
-    expand_to!(length, digits)
-  end
-end
-
-def expand_to_same_length!(digits1, digits2)
-  target_length = [digits1.size, digits2.size].max
-  expand_to!(target_length, digits1)
-  expand_to!(target_length, digits2)
-end
-
 # multiplication
 
 def multiply(x, y)
-  x_digits = x.split('')
-  y_digits = y.split('')
+  x_digits = digits(x)
+  y_digits = digits(y)
 
   summands = []
 
@@ -98,18 +53,17 @@ end
 def multiply_by_digit(digits, digit, position_counter)
   index = digits.size - 1
   result = []
-  position_counter.times { result.unshift('0') }
+  position_counter.times { result.push('0') }
   carry = '0'
 
   while index >= 0
-    current_digit_result = add(PRODUCT_TABLE[digits[index]][digit], carry)
-    if current_digit_result.length == 1
-      result.unshift(current_digit_result)
+    current_multiple = add(PRODUCT_TABLE[digits[index]][digit], carry)
+    if current_multiple.length == 1
+      result.unshift(current_multiple)
       carry = '0'
     else
-      current_result_digits = current_digit_result.split('')
-      result.unshift(current_result_digits.last)
-      carry = current_result_digits.first
+      result.unshift(digits(current_multiple).last)
+      carry = digits(current_multiple).first
     end
     index -= 1
   end
@@ -125,21 +79,71 @@ def sum_up(list_of_numbers)
   result
 end
 
+# addition
+
+def add(x, y)
+  x_digits = digits(x)
+  y_digits = digits(y)
+  expand_to_same_length!(x_digits, y_digits)
+
+  carry = '0'
+  result = []
+
+  while x_digits != []
+    current_x_digit = x_digits.pop
+    current_y_digit = y_digits.pop
+
+    current_x_digit_plus_carry = SUM_TABLE[carry][current_x_digit]
+    current_sum =
+      SUM_TABLE[current_x_digit_plus_carry][current_y_digit]
+
+    if current_sum.size == 1
+      result.unshift(current_sum)
+      carry = '0'
+    else
+      result.unshift(digits(current_sum).last)
+      carry = digits(current_sum).first
+    end
+  end
+
+  result.unshift(carry) unless carry == '0'
+  result.join
+end
+
+def digits(string)
+ string.chars
+end
+
+def expand_to_same_length!(digits1, digits2)
+  target_length = [digits1.size, digits2.size].max
+  expand_to!(target_length, digits1)
+  expand_to!(target_length, digits2)
+end
+
+def expand_to!(length, digits)
+  if digits.size < length
+    digits.unshift('0')
+    expand_to!(length, digits)
+  end
+end
+
 # test
 
 def test
   passed = true
-  100.times do
+
+  1000000.times do
     x = rand(1..1000)
     y = rand(1..1000)
-    ruby_product = x * y
+    product = x * y
 
     x_string = x.to_s
     y_string = y.to_s
-    my_product = multiply(x_string, y_string)
+    my_product = multiply(x_string, y_string).to_i
 
-    passed = false if ruby_product != my_product.to_i
+    passed = false if product != my_product
   end
+
   puts 'passed test' if passed
 end
 
