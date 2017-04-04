@@ -132,7 +132,7 @@ end
 def test
   passed = true
 
-  1000000.times do
+  10000.times do
     x = rand(1..1000)
     y = rand(1..1000)
     product = x * y
