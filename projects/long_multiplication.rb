@@ -1,14 +1,14 @@
-# long multiplication (and addition) in decimal and binary, using the standard grade-school algorithms.
+# long multiplication and addition in decimal and binary, using the standard grade-school algorithms.
 
 SUM_TABLE =
   {
-    'base2' =>
+    '2' =>
       {
         '0' => { '0' => '0', '1' => '1' },
         '1' => { '0' => '1', '1' => '10' },
         '10' => { '0' => '10', '1' => '11' }
       },
-    'base10' =>
+    '10' =>
       {
         '0'  => { '0' => '0', '1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6', '7' => '7', '8' => '8', '9' => '9', '10' => '10' },
         '1'  => { '0' => '1', '1' => '2', '2' => '3', '3' => '4', '4' => '5', '5' => '6', '6' => '7', '7' => '8', '8' => '9', '9' => '10', '10' => '11' },
@@ -26,12 +26,12 @@ SUM_TABLE =
 
 PRODUCT_TABLE =
   {
-    'base2' =>
+    '2' =>
       {
         '0' => { '0' => '0', '1' => '0' },
         '1' => { '0' => '0', '1' => '1' },
       },
-    'base10' =>
+    '10' =>
       {
         '0' => { '0' => '0', '1' => '0', '2' => '0', '3' => '0', '4' => '0', '5' => '0', '6' => '0', '7' => '0', '8' => '0', '9' => '0' },
         '1' => { '0' => '0', '1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6', '7'=> '7', '8' => '8', '9' => '9' },
@@ -48,7 +48,7 @@ PRODUCT_TABLE =
 
 # multiplication
 
-def multiply(x, y, base)
+def multiply(x, y, base = '10')
   summands = []
 
   x_digits = digits(x)
@@ -101,7 +101,7 @@ end
 
 # addition
 
-def add(x, y, base)
+def add(x, y, base = '10')
   result = []
 
   x_digits = digits(x)
@@ -149,10 +149,10 @@ end
 
 # tests
 
-def test_for_decimal
+def test_for_decimal(number_of_tests)
   passed = true
 
-  100.times do
+  number_of_tests.times do
     x = rand(1..1000)
     y = rand(1..1000)
     product = x * y
@@ -160,7 +160,7 @@ def test_for_decimal
 
     x_string = x.to_s
     y_string = y.to_s
-    my_product = multiply(x_string, y_string, 'base10')
+    my_product = multiply(x_string, y_string)
 
     passed = false if product != my_product
   end
@@ -168,10 +168,10 @@ def test_for_decimal
   puts 'passed test for decimal' if passed
 end
 
-def test_for_binary
+def test_for_binary(number_of_tests)
   passed = true
 
-  100.times do
+  number_of_tests.times do
     x = rand(1..1000)
     y = rand(1..1000)
     product = x * y
@@ -179,7 +179,7 @@ def test_for_binary
 
     x_string = x.to_s(2)
     y_string = y.to_s(2)
-    my_product = multiply(x_string, y_string, 'base2')
+    my_product = multiply(x_string, y_string, '2')
 
     passed = false if product != my_product
   end
@@ -187,5 +187,5 @@ def test_for_binary
   puts 'passed test for binary' if passed
 end
 
-test_for_decimal
-test_for_binary
+test_for_decimal(1000)
+test_for_binary(1000)
