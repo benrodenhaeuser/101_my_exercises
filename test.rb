@@ -1,7 +1,34 @@
-def foo(b)
-  p b.object_id
+def triangle(num, corner_v = :down, corner_h = :right, filler = '*', blank = ' ')
+
+  num.times do |i|
+
+    case corner_v
+    when :up
+      amount_blank  = i
+      amount_filler = num - i
+    when :down
+      i += 1
+      amount_filler = i
+      amount_blank  = num - i
+    end
+
+    blanks  = blank  * amount_blank
+    fillers = filler * amount_filler
+
+    case corner_h
+    when :left
+      left  = fillers
+      right = blanks
+    when :right
+      left  = blanks
+      right = fillers
+    end
+
+    puts left + right
+  end
 end
 
-a = [1, 2, 3]
-p a.object_id
-foo(a)
+# Examples
+
+# `triangle(6, :up, :left)` is almost `triangle(6, :down, :right, ' ', '*')`.
+# And `triangle(6, :up, :right)` is almost `triangle(6, :down, :left, ' ', '*')`.

@@ -1,7 +1,7 @@
 # calculations with fractions
 # approach: represent fractions as two-element arrays
 
-# adding two fractions
+# fractional addition
 def add_frac(frac1, frac2)
   numerator1 = frac1[0]
   numerator2 = frac2[0]
@@ -15,11 +15,12 @@ def add_frac(frac1, frac2)
   end
 end
 
-def greatest_common_divisor(number1, number2)
+# greatest common divisor
+def gcd(number1, number2)
   if number2 == 0
     number1
   else
-    greatest_common_divisor(number2, number1 % number2)
+    gcd(number2, number1 % number2)
   end
 end
 
@@ -27,7 +28,7 @@ end
 def reduce(frac)
   numerator = frac[0]
   denominator = frac[1]
-  gcd = greatest_common_divisor(numerator,denominator)
+  gcd = gcd(numerator,denominator)
   [numerator/gcd, denominator/gcd]
 end
 
