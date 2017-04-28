@@ -33,4 +33,4 @@ def create_exercise_files(number_of_files, directory)
 end
 
 # (don't uncomment and run unless you want to create those files!)
-create_exercise_files(10, "12 Hashes")
+# create_exercise_files(10, "12 Hashes")
