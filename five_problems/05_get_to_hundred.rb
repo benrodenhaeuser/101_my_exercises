@@ -1,76 +1,50 @@
 # Problem 5
 
-# Write a program that outputs all possibilities to put + or - or nothing between the numbers 1, 2, ..., 9 (in this order) such that the result is always 100. For example: 1 + 2 + 34 – 5 + 67 – 8 + 9 = 100.
+# Write a program that outputs all possibilities to put + or - or nothing between
+# the numbers 1, 2, ..., 9 (in this order) such that the result is always 100.
+# For example: 1 + 2 + 34 – 5 + 67 – 8 + 9 = 100.
 
-TARGET_SUM = 100
-
-def generate_all_choice_sequences
-  current_sequences = [[:plus], [:minus], [:next]]
-
-  7.times do
-    next_sequences = []
-    current_sequences.each do |sequence|
-      next_sequences << sequence + [:plus]
-      next_sequences << sequence + [:minus]
-      next_sequences << sequence + [:next]
-      current_sequences = next_sequences
+def generate_sequences
+  (2..9).inject([[1]]) do |sequences, number|
+    sequences.flat_map do |sequence|
+      [
+        sequence + [' + ', number],
+        sequence + [' - ', number],
+        sequence[0..-2] + [(sequence.last.to_s + number.to_s).to_i]
+      ]
     end
   end
-
-  current_sequences
 end
 
-def generate_list_of_summands(choice_sequence)
-  summands = [1]
-
-  choice_sequence.each_with_index do |choice, index|
-    current_number = index + 2
-    case choice
-    when :plus
-      summands << current_number
-    when :minus
-      summands << -current_number
-    when :next
-      summands[-1] = (summands.last.to_s + current_number.to_s).to_i
+def evaluate_sequence(sequence)
+  result = sequence.first
+  sequence.each_with_index do |value, index|
+    if index.odd?
+      case value
+      when ' + ' then result += sequence[index + 1]
+      when ' - ' then result -= sequence[index + 1]
+      end
     end
   end
-
-  summands
+  result
 end
 
-def sum_up(list_of_summands)
-  list_of_summands.inject(&:+)
-end
-
-def display_sum(list_of_summands)
-  display_string = ''
-
-  list_of_summands.each do |summand|
-    if summand > 0
-      display_string << " + #{summand.abs}"
-    else
-      display_string << " - #{summand.abs}"
-    end
+def select_sequences
+  generate_sequences.select do |sequence|
+    evaluate_sequence(sequence) == 100
   end
-  display_string.slice!(0, 3) if display_string[0] == ' '
-
-  display_string
 end
 
-def find_hits
-  hits = []
+select_sequences.each { |sequence| puts sequence.join }
 
-  sequences = generate_all_choice_sequences
-  sequences.each do |sequence|
-    summands = generate_list_of_summands(sequence)
-    hits << summands if sum_up(summands) == TARGET_SUM
-  end
-
-  hits
-end
-
-def display_hits(hits)
-  hits.each { |hit| puts display_sum(hit) }
-end
-
-display_hits(find_hits)
+# 1 + 2 + 3 - 4 + 5 + 6 + 78 + 9
+# 1 + 2 + 34 - 5 + 67 - 8 + 9
+# 1 + 23 - 4 + 5 + 6 + 78 - 9
+# 1 + 23 - 4 + 56 + 7 + 8 + 9
+# 12 + 3 + 4 + 5 - 6 - 7 + 89
+# 12 + 3 - 4 + 5 + 67 + 8 + 9
+# 12 - 3 - 4 + 5 - 6 + 7 + 89
+# 123 + 4 - 5 + 67 - 89
+# 123 + 45 - 67 + 8 - 9
+# 123 - 4 - 5 - 6 - 7 + 8 - 9
+# 123 - 45 - 67 + 89
