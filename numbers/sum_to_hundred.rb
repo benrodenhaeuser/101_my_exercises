@@ -1,27 +1,17 @@
 # Problem 5
 
-# Write a program that outputs all possibilities to put + or - or nothing between
-# the numbers 1, 2, ..., 9 (in this order) such that the result is always 100.
-# For example: 1 + 2 + 34 – 5 + 67 – 8 + 9 = 100.
+# Write a program that outputs all possibilities to put + or - or nothing
+# between the numbers 1, 2, ..., 9 (in this order) such that the result is
+# always 100. For example: 1 + 2 + 34 – 5 + 67 – 8 + 9 = 100.
 
-# SOLUTION 1: Recursive
+# -------
 
-def solve(summands, stock, solutions)
-  if stock == []
-    solutions << summands if summands.reduce(&:+) == 100
-  else
-    solve(summands + [stock.first], stock.drop(1), solutions)
-    solve(summands + [-stock.first], stock.drop(1), solutions)
-    solve(
-      summands[0..-2] + [(summands.last.to_s + stock.first.to_s).to_i],
-      stock[1..-1],
-      solutions
-    )
-  end
-end
+TARGET_VALUE = 100
 
-def display_string(summands)
-  summands.inject('') do |string, summand|
+# helper method to display an array of summands
+# of the required form as a sum expression
+def display_expression(seq)
+  seq.inject('') do |string, summand|
     if summand.to_s.start_with?('1')
       summand.to_s
     elsif summand > 0
@@ -32,15 +22,25 @@ def display_string(summands)
   end
 end
 
-def show_the_solutions
-  solutions = []
-  solve([1], (2..9).to_a, solutions)
-  solutions.each { |solution| puts display_string(solution) }
+# SOLUTION 1: Recursion
+
+def solve(seq, stock, solutions)
+  if stock == []
+    solutions << seq if seq.reduce(&:+) == TARGET_VALUE
+  else
+    solve(seq + [stock.first], stock.drop(1), solutions)
+    solve(seq + [-stock.first], stock.drop(1), solutions)
+    solve(
+      seq[0..-2] + [(seq.last <=> 0) * (10 * seq.last.abs + stock.first)],
+      stock.drop(1),
+      solutions
+    )
+  end
 end
 
-puts "Results for recursive approach:"
-
-show_the_solutions
+solutions = []
+solve([1], (2..9).to_a, solutions)
+solutions.each { |solution| puts display_expression(solution) }
 
 # [1, 2, 3, -4, 5, 6, 78, 9]
 # [1, 2, 34, -5, 67, -8, 9]
@@ -54,47 +54,29 @@ show_the_solutions
 # [123, -4, -5, -6, -7, 8, -9]
 # [123, -45, -67, 89]
 
+puts '------------------------'
 
-# SOLUTION 2: Iterative
+# SOLUTION 2: Iteration
 
 def generate_sequences
   (2..9).inject([[1]]) do |sequences, number|
-    sequences.flat_map do |sequence|
+    sequences.flat_map do |seq|
       [
-        sequence + [' + ', number],
-        sequence + [' - ', number],
-        sequence[0..-2] + [(sequence.last.to_s + number.to_s).to_i]
+        seq + [number],
+        seq + [-number],
+        seq[0..-2] + [(seq.last <=> 0) * (10 * seq.last.abs + number)]
       ]
     end
   end
 end
 
-def evaluate_sequence(sequence)
-  result = sequence.first
-  sequence.each_with_index do |value, index|
-    if index.odd?
-      case value
-      when ' + ' then result += sequence[index + 1]
-      when ' - ' then result -= sequence[index + 1]
-      end
-    end
-  end
-  result
-end
-
 def select_sequences
-  generate_sequences.select do |sequence|
-    evaluate_sequence(sequence) == 100
+  generate_sequences.select do |seq|
+    seq.reduce(&:+) == TARGET_VALUE
   end
 end
 
-def show_solutions
-  select_sequences.each { |sequence| puts sequence.join }
-end
-
-puts "Results for iterative approach:"
-
-show_solutions
+select_sequences.each { |seq| puts display_expression(seq) }
 
 # 1 + 2 + 3 - 4 + 5 + 6 + 78 + 9
 # 1 + 2 + 34 - 5 + 67 - 8 + 9
