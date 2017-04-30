@@ -10,8 +10,8 @@ TARGET_VALUE = 100
 
 # helper method to display an array of summands
 # of the required form as a sum expression
-def display_expression(seq)
-  seq.inject('') do |string, summand|
+def display_expression(sequence)
+  sequence.inject('') do |string, summand|
     if summand.to_s.start_with?('1')
       summand.to_s
     elsif summand > 0
@@ -42,19 +42,7 @@ solutions = []
 solve([1], (2..9).to_a, solutions)
 solutions.each { |solution| puts display_expression(solution) }
 
-# [1, 2, 3, -4, 5, 6, 78, 9]
-# [1, 2, 34, -5, 67, -8, 9]
-# [1, 23, -4, 5, 6, 78, -9]
-# [1, 23, -4, 56, 7, 8, 9]
-# [12, 3, 4, 5, -6, -7, 89]
-# [12, 3, -4, 5, 67, 8, 9]
-# [12, -3, -4, 5, -6, 7, 89]
-# [123, 4, -5, 67, -89]
-# [123, 45, -67, 8, -9]
-# [123, -4, -5, -6, -7, 8, -9]
-# [123, -45, -67, 89]
-
-puts '------------------------'
+puts "-----"
 
 # SOLUTION 2: Iteration
 
@@ -77,15 +65,3 @@ def select_sequences
 end
 
 select_sequences.each { |seq| puts display_expression(seq) }
-
-# 1 + 2 + 3 - 4 + 5 + 6 + 78 + 9
-# 1 + 2 + 34 - 5 + 67 - 8 + 9
-# 1 + 23 - 4 + 5 + 6 + 78 - 9
-# 1 + 23 - 4 + 56 + 7 + 8 + 9
-# 12 + 3 + 4 + 5 - 6 - 7 + 89
-# 12 + 3 - 4 + 5 + 67 + 8 + 9
-# 12 - 3 - 4 + 5 - 6 + 7 + 89
-# 123 + 4 - 5 + 67 - 89
-# 123 + 45 - 67 + 8 - 9
-# 123 - 4 - 5 - 6 - 7 + 8 - 9
-# 123 - 45 - 67 + 89
