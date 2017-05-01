@@ -1,5 +1,7 @@
 # given a string, find all permutations of the string
 
+# solution 1
+
 def all_permutations(string)
   produce_all_permutations(string).sort
 end
@@ -20,21 +22,50 @@ def produce_all_permutations(string)
   end
 end
 
-p all_permutations('') # [""]
+p all_permutations('')
 puts
-p all_permutations('a') # ["a"]
+p all_permutations('a')
 puts
-p all_permutations('ab') # ["ab", "ba"]
+p all_permutations('ab')
 puts
-p all_permutations('abc') # ["abc", "acb", "bac", "bca", "cab", "cba"]
+p all_permutations('abc')
 puts
 p all_permutations('abcd')
-# ["abcd", "abdc", "acbd", "acdb", "adbc", "adcb", "bacd", "badc", "bcad", "bcda", "bdac", "bdca", "cabd", "cadb", "cbad", "cbda", "cdab", "cdba", "dabc", "dacb", "dbac", "dbca", "dcab", "dcba"]
+puts
+p all_permutations('abcde')
 
-p all_permutations('abcdef').size == (1..6).reduce(1, :*) # true
-p all_permutations('abcdefghi').size == (1..9).reduce(1, :*) # true
+3.times { puts }
 
-# ^ (1..n).reduce(1, :*) computes the factorial of 6
-# the number of permutations of a string is factorial(string.size)
-# so this function grows fast
-# for strings of size >= 9, all_permutations above is too slow to be useable.
+# solution 2
+
+def generate_permutations(stock, chosen, permus)
+  if stock.empty?
+    permus << chosen
+  else
+    stock.each_with_index do |choice, index|
+      new_stock =
+        stock[0...index] + stock[index + 1...stock.size]
+      generate_permutations(new_stock, chosen + choice, permus)
+    end
+  end
+  nil
+end
+
+def permutations(string)
+  permus = []
+  generate_permutations(string.chars, '', permus)
+  permus
+end
+
+p permutations('')
+puts
+p permutations('a')
+puts
+p permutations('ab')
+puts
+p permutations('abc')
+puts
+p permutations('abcd')
+puts
+p permutations('abcde')
+puts
