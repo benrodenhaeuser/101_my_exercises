@@ -19,10 +19,8 @@ puts greeting
 - On line 3, the `loop` method is invoked, passing a block as part of the method invocation. The block extends from line 3 to line 6 and is delineated by the pair of keywords `do ... end`.
 - Within the block, `greeting` is re-assigned (on line 4) to a new String object with value `'Hi'`.
 - This is possible because the scope created by the block extends the main scope of the program. All local variables that are initialized in the main scope, and prior to the block, are accessible from the block scope, in particular the local variable `greeting` that was initialized on line 1.
-- In line 5, we break out of the loop using the `break` keyword (if we were to delete line 5 from the program, the loop would continue forever, so the program would not terminate).
-- On line 8, we are back in the main scope. Since the local variable `greeting` was accessible from the block scope, and was re-assigned in the block (as described out above), the local variable `greeting` at this point points to a String object with value `Hi`.
+- On line 8, we are back in the main scope. Since the local variable `greeting` was accessible from the block scope, and was re-assigned in the block (as described above), the local variable `greeting` at this point points to a String object with value `Hi`.
 - Thus, on line 8, as the `puts` method is called, passing the argument `greeting`, `'Hi'` is output.
-- As an aside: the return value of both method invocations in this program is `nil`: the invocation of the `loop` method on line 3 returns `nil`, and so does the invocation of the `puts` method on line 8.
 - What the code example demonstrates is the fact that variables that have been initialized in an outer scope are accessible from an inner scope that is created by a block passed as part of a method invocation. This is an important scoping rule for local variables in Ruby.
 
 **Instructor Answer**

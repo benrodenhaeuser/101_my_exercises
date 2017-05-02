@@ -56,4 +56,4 @@ def palindromes(string)
 end
 
 p palindromes("annabrznnzghynny") # ["anna", "znnz", "ynny"]
-p palindromes('aogishgsaoifsjannaalium') # ['anna'], close to tractability border
+p palindromes('aogishgsaoifsjannaalium') # ['anna'], close to tractability border ...

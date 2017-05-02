@@ -8,9 +8,9 @@
 
 TARGET_VALUE = 100
 
-# helper method to display an array of summands
+# helper method to format an array of summands
 # of the required form as a sum expression
-def display_expression(sequence)
+def get_display_expression(sequence)
   sequence.inject('') do |string, summand|
     if summand.to_s.start_with?('1')
       summand.to_s
@@ -36,17 +36,18 @@ def solve(seq, stock, solutions)
       solutions
     )
   end
+  nil
 end
 
 solutions = []
 solve([1], (2..9).to_a, solutions)
-solutions.each { |solution| puts display_expression(solution) }
+solutions.each { |solution| puts get_display_expression(solution) }
 
 puts "-----"
 
 # SOLUTION 2: Iteration
 
-def generate_sequences
+def generate_all_sequences
   (2..9).inject([[1]]) do |sequences, number|
     sequences.flat_map do |seq|
       [
@@ -58,10 +59,8 @@ def generate_sequences
   end
 end
 
-def select_sequences
-  generate_sequences.select do |seq|
-    seq.reduce(&:+) == TARGET_VALUE
-  end
+def select_target_sequences
+  generate_all_sequences.select { |seq| seq.reduce(&:+) == TARGET_VALUE }
 end
 
-select_sequences.each { |seq| puts display_expression(seq) }
+select_target_sequences.each { |seq| puts get_display_expression(seq) }
