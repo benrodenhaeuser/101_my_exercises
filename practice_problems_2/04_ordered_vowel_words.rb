@@ -65,6 +65,9 @@ return value:
 
 =end
 
+# solution
+
+
 VOWELS = %w(a e i o u)
 
 def get_vowels(word)
@@ -89,6 +92,21 @@ def ordered_vowel_words(phrase)
     ord_vow_words << word if ordered_vowel_word?(word)
   end
   ord_vow_words.join(' ')
+end
+
+# refactored solution (using select instead of each in two places)
+
+def get_vowel_string(word)
+  word.chars.select { |char| VOWELS.include?(char) }.join
+end
+
+def ordered_vowel_word?(word)
+  vowel_string = get_vowel_string(word)
+  vowel_string.match(/a*e*i*o*u*/).to_s == vowel_string
+end
+
+def ordered_vowel_words(phrase)
+  phrase.split(' ').select { |word| ordered_vowel_word?(word) }.join(' ')
 end
 
 puts("\nTests for #ordered_vowel_words")
