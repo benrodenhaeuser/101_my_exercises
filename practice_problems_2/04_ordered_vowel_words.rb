@@ -49,6 +49,8 @@ return value:
     - split our given string into characters
     - iterate over characters, appending vowels to a new string, while ignoring consonants
 
+    (=> step 1 can be its own method)
+
   step 2: match `word_vowels` against the regex /a*e*i*o*u*/
     => if there is a match, then we have an ordered vowel word
     => else we don't have ordered_vowel_word
@@ -58,14 +60,14 @@ return value:
   - given input string
   - word_array: split string in words (i.e., split on whitespace)
   - initialize new empty array ord_vow_words
-  - iterate over word_array:
-    - if current word from word_array is ordered vowel word (helper method!):
+  - iterate over word_array. on each iteration:
+    - if current word from word_array is ordered vowel word (use helper method!):
       append current word to ord_vow_words
   - join ord_vow_words, putting single whitespace between elements
 
 =end
 
-# solution
+# initial solution
 
 
 VOWELS = %w(a e i o u)
@@ -94,10 +96,10 @@ def ordered_vowel_words(phrase)
   ord_vow_words.join(' ')
 end
 
-# refactored solution (using select instead of each in two places)
+# refactored solution
 
 def get_vowel_string(word)
-  word.chars.select { |char| VOWELS.include?(char) }.join
+  word.chars.select { |char| char.match(/a|e|i|o|u/) }.join
 end
 
 def ordered_vowel_word?(word)
