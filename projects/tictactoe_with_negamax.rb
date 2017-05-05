@@ -59,6 +59,12 @@ SKILL_LEVEL = 3
 MOVES = [M1, M2, M3, M4, M5, M6, M7, M8, M9]
 CENTER_MOVE = M5
 
+WIN_STRINGS = %r{
+  #{M1}#{M2}#{M3}.*|.*#{M4}#{M5}#{M6}.*|.*#{M7}#{M8}#{M9}|
+  #{M1}.*#{M4}.*#{M7}.*|.*#{M2}.*#{M5}.*#{M8}.*|.*#{M3}.*#{M6}.*#{M9}|
+  #{M1}.*#{M5}.*#{M9}|.*#{M3}.*#{M5}.*#{M7}.*
+}x
+
 def initialize_board
   board = {}
   MOVES.each { |move| board[move] = false }
@@ -89,10 +95,7 @@ def get_move(player, board)
 end
 
 def update(board, move, player)
-  case player
-  when :computer then board[move] = :computer
-  when :user then board[move] = :user
-  end
+  board[move] = player
 end
 
 def undo(move, board)
@@ -107,12 +110,7 @@ def opponent_of(player)
 end
 
 def winner?(board, player)
-  win_strings = %r{
-    #{M1}#{M2}#{M3}.*|.*#{M4}#{M5}#{M6}.*|.*#{M7}#{M8}#{M9}|
-    #{M1}.*#{M4}.*#{M7}.*|.*#{M2}.*#{M5}.*#{M8}.*|.*#{M3}.*#{M6}.*#{M9}|
-    #{M1}.*#{M5}.*#{M9}|.*#{M3}.*#{M5}.*#{M7}.*
-  }x
-  !!moves_so_far_of(player, board).join.match(win_strings)
+  !!moves_so_far_of(player, board).join.match(WIN_STRINGS)
 end
 
 def done?(board)
@@ -122,7 +120,7 @@ end
 # computer moves
 
 def get_computer_move(board)
-  sleep 0.5 # computer is thinking
+  sleep 0.2 # computer is thinking
 
   case SKILL_LEVEL
   when 1
@@ -164,34 +162,28 @@ def threat_for?(player, move, board)
 end
 
 def get_unbeatable_move(board)
-  negamax(board, :computer)[:best_moves].sample
+  evaluated = {}
+  evaluate(board, :computer, evaluated)
+  evaluated[board].last
 end
 
-def negamax(board, player)
-  evaluation = { value_of_board: nil, best_moves: [] }
+def evaluate(board, player, evaluated)
+  return nil if evaluated[board]
 
   if done?(board)
-    evaluation[:value_of_board] = result_for(player, board)
+    evaluated[board] = [result_for(player, board), nil]
   else
-    evaluate(board, player, evaluation)
-  end
-
-  evaluation
-end
-
-def evaluate(board, player, evaluation)
-  scores_for_moves = []
-  available_moves(board).each do |move|
-    update(board, move, player)
-    scores_for_moves << -negamax(board, opponent_of(player))[:value_of_board]
-    undo(move, board)
-  end
-  evaluation[:value_of_board] = scores_for_moves.max
-  available_moves(board).each_with_index do |move, index|
-    if scores_for_moves[index] == evaluation[:value_of_board]
-      evaluation[:best_moves] << move
+    next_scores = []
+    available_moves(board).each do |move|
+      update(board, move, player)
+      evaluate(board, opponent_of(player), evaluated)
+      next_scores << [-evaluated[board].first, move]
+      undo(move, board)
     end
+    evaluated[board] = next_scores.max_by { |score, move| score }
   end
+
+  nil
 end
 
 def result_for(player, board)
