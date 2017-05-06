@@ -177,7 +177,7 @@ def get_best_move(board, player = :computer, best = {})
   return best[board][:move] if best[board]
 
   if done?(board)
-    best[board] = { score: result_for(player, board), move: nil}
+    best[board] = { score: result_for(player, board), move: nil }
     nil
   else
     current_options = available_moves(board).map do |move|
