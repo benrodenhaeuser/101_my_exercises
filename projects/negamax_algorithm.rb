@@ -137,6 +137,58 @@ def get_unbeatable_move(board)
 end
 
 
+# maybe the following naming is better?
+
+def evaluate(board, player, evaluated)
+  return nil if evaluated[board]
+
+  if done?(board)
+    evaluated[board] = [result_for(player, board), nil]
+  else
+    next_scores = []
+    available_moves(board).each do |move|
+      update(board, move, player)
+      evaluate(board, opponent_of(player), evaluated)
+      next_scores << [-evaluated[board].first, move]
+      undo(move, board)
+    end
+    evaluated[board] = next_scores.max_by { |score, move| score }
+  end
+
+  nil
+end
+
+def get_unbeatable_move(board)
+  evaluated = {}
+  score(board, :computer, evaluated)
+  evaluated[board].last
+end
+
+
+# fixing the return value
+
+def get_unbeatable_move(board)
+  negamax(board).last
+end
+
+def negamax(board, player = :computer, evaluated = {})
+  if evaluated[board]
+    evaluated[board]
+  elsif done?(board)
+    evaluated[board] = [result_for(player, board), nil]
+  else
+    next_scores = []
+    available_moves(board).each do |move|
+      update(board, move, player)
+      negamax(board, opponent_of(player), evaluated)
+      next_scores << [-evaluated[board].first, move]
+      undo(move, board)
+    end
+    evaluated[board] = next_scores.max_by { |score, move| score }
+  end
+end
+
+
 # test cases
 
 initial_board = {

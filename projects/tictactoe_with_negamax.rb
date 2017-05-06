@@ -1,6 +1,6 @@
 # tic tac toe
 
-# user messages config
+# USER MESSAGES CONFIG
 
 require 'yaml'
 
@@ -34,7 +34,7 @@ another_game?: Would you like to play again? (Y/N)"
 
 MESSAGES = YAML.load(messages)
 
-# game config
+# GAME CONFIG
 
 # move variables
 M1 = '1'; M2 = '2'; M3 = '3'
@@ -47,14 +47,10 @@ FIRST_TO_MOVE = :user
 # number of round wins to achieve overall win
 WINS_TO_WIN_THE_GAME = 5
 
-# game difficulty level
-# 1: 'easy',
-# 2: 'medium'
-# 3: 'impossible to win'
+# game difficulty level (1: 'easy', 2: 'medium', 3: 'impossible to win')
 SKILL_LEVEL = 3
-# ^ at level 3, program is very *slow* during the first moves
 
-# game mechanics
+# GAME MECHANICS
 
 MOVES = [M1, M2, M3, M4, M5, M6, M7, M8, M9]
 CENTER_MOVE = M5
@@ -117,7 +113,17 @@ def done?(board)
   winner?(board, :computer) || winner?(board, :user) || full?(board)
 end
 
-# computer moves
+def result_for(player, board)
+  if winner?(board, player)
+    1
+  elsif winner?(board, opponent_of(player))
+    -1
+  elsif full?(board)
+    0
+  end
+end
+
+# COMPUTER MOVES
 
 def get_computer_move(board)
   sleep 0.2 # computer is thinking
@@ -132,9 +138,13 @@ def get_computer_move(board)
   end
 end
 
+# level 1
+
 def get_random_move(board)
   available_moves(board).sample
 end
+
+# level 2
 
 def get_decent_move(board)
   if threats_for(:user, board) != []
@@ -161,42 +171,32 @@ def threat_for?(player, move, board)
   end
 end
 
+# level 3
+
 def get_unbeatable_move(board)
-  evaluated = {}
-  evaluate(board, :computer, evaluated)
-  evaluated[board].last
+  negamax(board).last
 end
 
-def evaluate(board, player, evaluated)
-  return nil if evaluated[board]
+def negamax(board, player = :computer, values = {})
+  return values[board] if values[board]
 
   if done?(board)
-    evaluated[board] = [result_for(player, board), nil]
+    values[board] = [result_for(player, board), nil]
   else
-    next_scores = []
+    current_options = []
+
     available_moves(board).each do |move|
       update(board, move, player)
-      evaluate(board, opponent_of(player), evaluated)
-      next_scores << [-evaluated[board].first, move]
+      negamax(board, opponent_of(player), values) unless values[board]
+      current_options << [-values[board].first, move]
       undo(move, board)
     end
-    evaluated[board] = next_scores.max_by { |score, move| score }
-  end
 
-  nil
-end
-
-def result_for(player, board)
-  if winner?(board, player)
-    1
-  elsif winner?(board, opponent_of(player))
-    -1
-  elsif full?(board)
-    0
+    values[board] = current_options.max_by { |score, move| score }
   end
 end
 
-# user interface
+# USER INTERFACE
 
 def prompt(message, subst = {})
   message = MESSAGES[message] % subst
@@ -340,7 +340,7 @@ def user_wants_to_play_again?
   end
 end
 
-# game loop
+# GAME LOOP
 
 loop do
   system 'clear'
