@@ -134,7 +134,7 @@ def get_computer_move(board)
   when 2
     get_decent_move(board)
   when 3
-    get_unbeatable_move(board)
+    get_best_move(board)
   end
 end
 
@@ -173,26 +173,24 @@ end
 
 # level 3
 
-def get_unbeatable_move(board)
-  negamax(board).last
-end
-
-def negamax(board, player = :computer, values = {})
-  return values[board] if values[board]
+def get_best_move(board, player = :computer, best = {})
+  return best[board][:move] if best[board]
 
   if done?(board)
-    values[board] = [result_for(player, board), nil]
+    best[board] = { score: result_for(player, board), move: nil}
+    nil
   else
     current_options = []
 
     available_moves(board).each do |move|
       update(board, move, player)
-      negamax(board, opponent_of(player), values) unless values[board]
-      current_options << [-values[board].first, move]
+      get_best_move(board, opponent_of(player), best) unless best[board]
+      current_options << { score: -best[board][:score], move: move }
       undo(move, board)
     end
 
-    values[board] = current_options.max_by { |score, _move| score }
+    best[board] = current_options.max_by { |option| option[:score] }
+    best[board][:move]
   end
 end
 

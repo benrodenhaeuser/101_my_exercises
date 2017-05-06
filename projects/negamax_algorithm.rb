@@ -109,6 +109,7 @@ def score(board, player, scores)
 end
 
 # adapt negamax so that it tracks the best move
+# (stores solutions as a side effect)
 
 def score(board, player, scores)
   return nil if scores[board]
@@ -165,7 +166,7 @@ def get_unbeatable_move(board)
 end
 
 
-# fixing the return value
+# fixing the return value: we don't want the solutions just to be created as a side effect of calling the negamax method, we want the best move to be the return value of that method
 
 def get_unbeatable_move(board)
   negamax(board).last
@@ -185,6 +186,82 @@ def negamax(board, player = :computer, evaluated = {})
       undo(move, board)
     end
     evaluated[board] = next_scores.max_by { |score, move| score }
+  end
+end
+
+# store individual board values as hashes of the form { score: x, move: y }
+
+def get_optimal_move(board)
+  negamax(board)
+end
+
+def negamax(board, player = :computer, best = {})
+  return best[board][:move] if best[board]
+
+  if done?(board)
+    best[board] = { score: result_for(player, board), move: nil}
+    best[:move]
+  else
+    current_options = []
+
+    available_moves(board).each do |move|
+      update(board, move, player)
+      negamax(board, opponent_of(player), best) unless best[board]
+      current_options << { score: -best[board][:score], move: move }
+      undo(move, board)
+    end
+
+    best[board] = current_options.max_by { |option| option[:score] }
+    best[board][:move]
+  end
+end
+
+# without storage
+
+def get_optimal_move(board)
+  negamax(board)
+end
+
+def negamax(board, player = :computer, best = {})
+  if done?(board)
+    best[board] = { score: result_for(player, board), move: nil}
+    best[:move]
+  else
+    current_options = []
+
+    available_moves(board).each do |move|
+      update(board, move, player)
+      negamax(board, opponent_of(player), best)
+      current_options << { score: -best[board][:score], move: move }
+      undo(move, board)
+    end
+
+    best[board] = current_options.max_by { |option| option[:score] }
+    best[board][:move]
+  end
+end
+
+
+#
+
+def get_best_move(board, player = :computer, best = {})
+  return best[board][:move] if best[board]
+
+  if done?(board)
+    best[board] = { score: result_for(player, board), move: nil}
+    nil
+  else
+    current_options = []
+
+    available_moves(board).each do |move|
+      update(board, move, player)
+      get_best_move(board, opponent_of(player), best) unless best[board]
+      current_options << { score: -best[board][:score], move: move }
+      undo(move, board)
+    end
+
+    best[board] = current_options.max_by { |option| option[:score] }
+    best[board][:move]
   end
 end
 
