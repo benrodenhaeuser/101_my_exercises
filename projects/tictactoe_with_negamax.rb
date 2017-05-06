@@ -192,7 +192,7 @@ def negamax(board, player = :computer, values = {})
       undo(move, board)
     end
 
-    values[board] = current_options.max_by { |score, move| score }
+    values[board] = current_options.max_by { |score, _move| score }
   end
 end
 
