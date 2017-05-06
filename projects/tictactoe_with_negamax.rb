@@ -180,13 +180,12 @@ def get_best_move(board, player = :computer, best = {})
     best[board] = { score: result_for(player, board), move: nil}
     nil
   else
-    current_options = []
-
-    available_moves(board).each do |move|
+    current_options = available_moves(board).map do |move|
       update(board, move, player)
       get_best_move(board, opponent_of(player), best) unless best[board]
-      current_options << { score: -best[board][:score], move: move }
+      current_option = { score: -best[board][:score], move: move }
       undo(move, board)
+      current_option
     end
 
     best[board] = current_options.max_by { |option| option[:score] }

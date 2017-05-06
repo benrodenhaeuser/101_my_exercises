@@ -265,6 +265,30 @@ def get_best_move(board, player = :computer, best = {})
   end
 end
 
+# how about using map?
+
+def get_best_move(board, player = :computer, best = {})
+  return best[board][:move] if best[board]
+
+  if done?(board)
+    best[board] = { score: result_for(player, board), move: nil}
+    nil
+  else
+    current_options = available_moves(board).map do |move|
+      update(board, move, player)
+      get_best_move(board, opponent_of(player), best) unless best[board]
+      current_option = { score: -best[board][:score], move: move }
+      undo(move, board)
+      current_option
+    end
+
+    best[board] = current_options.max_by { |option| option[:score] }
+    best[board][:move]
+  end
+end
+
+
+
 
 # test cases
 
