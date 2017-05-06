@@ -78,34 +78,18 @@ end
 
 # NOTES
 
-# what is the time complexity in O notation of this algorithm?
+# the algorithm above is inefficient if our input string contains duplicate letters. on top of this, we actually produce an output array with duplicates!
 
-# given input of size n:
-# - there are n! permutations of input string
-# - n! calls to the base case (where string is written to permus)
-# - each of the permutations takes n calls to build
-# (but that is not quite true, because our algo has a tree-like shape! so we don't duplicate steps for permus that have a common prefix)
-# - so generate_permutations seems to run in O(n * n!)
-
-# We are talking here about the permutations method only.
-# Printing all the permutations obviously also takes time!
-
-# We do not take advantage of repetitions in the input string to reduce number of steps (right?). This has two consequences:
-
-# - unncessary effort
-# - duplicates in the solutions array we produce! (this could be fixed by using a different data structure, I suppose, but that would not take care of the first problem)
-
-
-# solution 3: do not produce duplicates!
+# solution 3: avoid making duplicates of the same permutation
 
 # approach
 
 # - before generating the permutations, make a frequency count for each letter that occurs in the input string (=> separate method)
 # - change the generate_permutations method to work with a hash stock instead of an array stock.
-# - keep track of the letter frequency as we use up letters, i.e., decrementing frequency of each used letter by 1.
+# - keep track of the letter frequency as we use up the letters, i.e., decrementing frequency of each used letter by 1.
 # - only work on letters whose count is > 0 (!)
-# - the base case of the recursion is now reached once all letters have frequencey 0 (we have exhausted our stock).
-# - also, make the method return the permutations rather than create them as a side-effect
+# - the base case of the recursion is now reached once all letters have frequencey 0 (this is when we have exhausted our stock).
+# - also, make the method return the permutations rather than merely store them.
 
 def frequency_count(array_of_char)
   frequencies = Hash.new { |hash, key| hash[key] = 0 }
@@ -125,14 +109,14 @@ def trace_back(frequencies, partial, choice)
   nil
 end
 
-def get_permutations(frequencies, partial = '', permutations = [])
+def compute_permutations(frequencies, partial = '', permutations = [])
   if frequencies.values.all? { |count| count == 0 }
     permutations << partial.dup
   else
     frequencies.each_key do |choice|
       next if frequencies[choice] == 0
       go_forward(frequencies, partial, choice)
-      get_permutations(frequencies, partial, permutations)
+      compute_permutations(frequencies, partial, permutations)
       trace_back(frequencies, partial, choice)
     end
   end
@@ -140,23 +124,26 @@ def get_permutations(frequencies, partial = '', permutations = [])
 end
 
 def permutations(string)
-  get_permutations(frequency_count(string.chars.sort))
+  compute_permutations(frequency_count(string.chars.sort))
 end
 
 # test
 
-p permutations('')
-puts
-p permutations('a')
-puts
-p permutations('ab')
-puts
-p permutations('abc')
-puts
-p permutations('abcd') # 24 results
-puts
-p permutations('aacd') # 12 results
-puts
-p permutations('aaaaaaaaa') # length = 9, 1 result
-puts
+# p permutations('')
+# puts
+# p permutations('a')
+# puts
+# p permutations('ab')
+# puts
+# p permutations('abc')
+# puts
+# p permutations('abcd') # 24 results
+# puts
+# p permutations('aacd') # 12 results
+# puts
+# p permutations('aaaaaaaaa') # length = 9, 1 result
+# puts
 # p permutations('abcdefghi') # length = 9, 362880 results, ~7-9 seconds to return
+
+permutations('123456789')
+puts 'done'
