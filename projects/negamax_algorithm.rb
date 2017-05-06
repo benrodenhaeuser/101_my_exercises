@@ -200,7 +200,7 @@ def negamax(board, player = :computer, best = {})
 
   if done?(board)
     best[board] = { score: result_for(player, board), move: nil}
-    best[:move]
+    nil # no move to make here!
   else
     current_options = []
 
@@ -216,7 +216,7 @@ def negamax(board, player = :computer, best = {})
   end
 end
 
-# without storage
+# without storage (for comparison)
 
 def get_optimal_move(board)
   negamax(board)
@@ -225,7 +225,7 @@ end
 def negamax(board, player = :computer, best = {})
   if done?(board)
     best[board] = { score: result_for(player, board), move: nil}
-    best[:move]
+    nil
   else
     current_options = []
 
@@ -242,7 +242,7 @@ def negamax(board, player = :computer, best = {})
 end
 
 
-#
+# final naming
 
 def get_best_move(board, player = :computer, best = {})
   return best[board][:move] if best[board]
