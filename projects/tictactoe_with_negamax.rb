@@ -98,7 +98,7 @@ def undo(move, board)
   board[move] = false
 end
 
-def opponent_of(player)
+def other(player)
   case player
   when :computer then :user
   when :user then :computer
@@ -116,7 +116,7 @@ end
 def result_for(player, board)
   if winner?(board, player)
     1
-  elsif winner?(board, opponent_of(player))
+  elsif winner?(board, other(player))
     -1
   elsif full?(board)
     0
@@ -164,8 +164,8 @@ end
 
 def threat_for?(player, move, board)
   if available_moves(board).include?(move)
-    update(board, move, opponent_of(player))
-    result = winner?(board, opponent_of(player))
+    update(board, move, other(player))
+    result = winner?(board, other(player))
     undo(move, board)
     result
   end
@@ -173,24 +173,28 @@ end
 
 # level 3
 
-def get_best_move(board, player = :computer, best = {})
-  return best[board][:move] if best[board]
+def get_best_move(board)
+  evaluation = solve(board)
+  evaluation[board][:move]
+end
+
+def solve(board, player = :computer, evaluation = {})
+  return evaluation if evaluation[board]
 
   if done?(board)
-    best[board] = { score: result_for(player, board), move: nil }
-    nil
+    evaluation[board] = { score: result_for(player, board), move: nil }
   else
     current_options = available_moves(board).map do |move|
       update(board, move, player)
-      get_best_move(board, opponent_of(player), best) unless best[board]
-      current_option = { score: -best[board][:score], move: move }
+      solve(board, other(player), evaluation) unless evaluation[board]
+      current_option = { score: -evaluation[board][:score], move: move }
       undo(move, board)
       current_option
     end
-
-    best[board] = current_options.max_by { |option| option[:score] }
-    best[board][:move]
+    evaluation[board] = current_options.max_by { |option| option[:score] }
   end
+
+  evaluation
 end
 
 # USER INTERFACE
@@ -373,14 +377,14 @@ loop do
         break
       end
 
-      player = opponent_of(player)
+      player = other(player)
     end
 
     if scores[player] == WINS_TO_WIN_THE_GAME
       announce_overall_winner(player)
       break
     end
-    player = opponent_of(player)
+    player = other(player)
 
     wait_for_user
   end
