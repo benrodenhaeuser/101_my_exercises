@@ -67,6 +67,13 @@ def initialize_board
   board
 end
 
+def get_move(player, board)
+  case player
+  when :user then request_user_move(board)
+  when :computer then get_computer_move(board)
+  end
+end
+
 def available_moves(board)
   MOVES.select { |move| !board[move] }
 end
@@ -81,13 +88,6 @@ end
 
 def empty?(board)
   available_moves(board) == MOVES
-end
-
-def get_move(player, board)
-  case player
-  when :user then request_user_move(board)
-  when :computer then get_computer_move(board)
-  end
 end
 
 def update(board, move, player)
@@ -174,27 +174,29 @@ end
 # level 3
 
 def get_best_move(board)
-  evaluation = solve(board)
+  evaluation = {}
+  solve(board, :computer, evaluation)
   evaluation[board][:move]
 end
 
-def solve(board, player = :computer, evaluation = {})
-  return evaluation if evaluation[board]
+def solve(board, player, evaluation)
+  return nil if evaluation[board]
 
   if done?(board)
     evaluation[board] = { score: result_for(player, board), move: nil }
   else
-    current_options = available_moves(board).map do |move|
-      update(board, move, player)
-      solve(board, other(player), evaluation) unless evaluation[board]
-      current_option = { score: -evaluation[board][:score], move: move }
-      undo(move, board)
-      current_option
-    end
-    evaluation[board] = current_options.max_by { |option| option[:score] }
+    options =
+      available_moves(board).map do |move|
+        update(board, move, player)
+        solve(board, other(player), evaluation)
+        option = { score: -evaluation[board][:score], move: move }
+        undo(move, board)
+        option
+      end
+    evaluation[board] = options.max_by { |option| option[:score] }
   end
 
-  evaluation
+  nil
 end
 
 # USER INTERFACE
