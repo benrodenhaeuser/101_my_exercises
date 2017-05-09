@@ -1,4 +1,4 @@
-# Problem 1:
+# Problem 1
 
 ```ruby
 a = 2
@@ -26,7 +26,7 @@ arr == [4, [3, 8]]
 - The local variable `arr` points to *another* array object, which contains two elements. The first element is a reference to the integer `2`, the second element is a reference to an array: the same array object to which `b` also points.
 - In terms of a count, we now have three integer objects (`2`, `5`, `8`), two array objects (`[5, 8]` and `[2, [5, 8]]`), and three variables, `a`, `b` and `arr`.
 
-Here are the objects our variables point to:
+Summarizing:
 
 - `a` points to `2`.
 - `b` points to `[5, 8]`.
@@ -46,7 +46,7 @@ Summary of where variables point to:
 
 ### After line 5
 
-- The array to which `arr[1]` points has been changed. Namely, the first element of that array now points to `3` (5 decremented by the value of a). Notice that `b` (still) points to that very same array, which by now is changed to `[3, 8]`.
+- The array to which `arr[1]` points has been changed. Namely, the first element of that array now points to `3` (`5` decremented by the value of `a`, which is `2`). Notice that `b` (still) points to that very same array, which has by now been changed to `[3, 8]`.
 - A new Integer object has come into existence, `3`. On the other hand, the Integer object `5` is now "gone" for all intents and purposes, as it is not referenced by any variable or array element anymore.
 
 In terms of variables as pointers:
@@ -69,14 +69,14 @@ arr == [4, [3, 8]]
 a = 'hello'
 arr = [a]
 
-arr[0] = arr[0] * 2
+arr[0] = arr[0] + ' world'
 ```
 
 ## Values of `a` and `arr`?
 
-```
+```ruby
 a == 'hello'
-arr == ['hellohello']
+arr == ['hello world']
 ```
 
 ## Explanation
@@ -87,7 +87,9 @@ After line 2:
 
 After line 4:
 
-- The single element of `arr` now points to a new string object `hellohello`. The new string object was obtained by calling the `*` method on the string `hello`, passing the argument `2`. This call did not affect the original string object to which `a` points. So the value of `a` is not affected.
+- The single element of `arr` now points to a new string object `hello world`. The new string object was obtained by calling the `+` method on the string `hello`, passing the argument `' world'`. This call did not affect the original string object to which `a` points. So the value of `a` is not affected.
+
+- So we now have two variables, and three objects: the variables are `a` and `arr`, the objects are the reference of `a` (the string `'hello'`), the array object, and the string `hello world` referenced by the single array element.
 
 # Problem 3
 
@@ -95,14 +97,14 @@ After line 4:
 a = 'hello'
 arr = [a]
 
-arr[0] = arr[0] << 'hello'
+arr[0] = arr[0] << ' world'
 ```
 
 ## Values of `a` and `arr`
 
 ```ruby
-a == 'hellohello'
-arr == ['hellohello']
+a == 'hello world'
+arr == ['hello world']
 ```
 
 ## Explanation
@@ -113,4 +115,6 @@ After line 2:
 
 After line 4:
 
-- The reference of the single element of `arr` remains to the same string. However, the string has been mutated by the call to `<<`. Since `a` also points to this string, `a` now evaluates to `hellohello`.
+- The reference of the single element of `arr` remains to the same string. However, the string has been mutated by the call to `<<`. Since `a` also points to this string, `a` now evaluates to `hello world`.
+
+- So compared to the previous example, we have *fewer objects* after line 4 than we had in that previous example after line 4: we have two variables, `a` and `arr`, as before, but there are only two objects, rather than three: the two objects are one array and one string.

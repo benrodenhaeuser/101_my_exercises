@@ -1,7 +1,5 @@
 # Working with Blocks
 
-When analyzing and describing what’s happening in code, focus on these questions:
-
 - What is the *type of action* being performed (method call, block, conditional, etc..)?
 - What is the *object* that action is being performed on?
 - What is the *side-effect* of that action (e.g. output or destructive action)?
