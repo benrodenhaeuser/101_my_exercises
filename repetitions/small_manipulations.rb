@@ -75,17 +75,18 @@ munsters = {
   "Marilyn" => { "age" => 23, "gender" => "female"}
 }
 
-# "select the male munsters, map to their ages, and sum up"
+# approach 1: "select the male munsters, map to their ages, and sum up"
 total_age = munsters.select { |_, value| value['gender'] == 'male'  }.map { |_, value| value['age'] }.reduce(&:+)
-p total_age # 444
 
-# "for each munster, add munster's age to total_value if munster is male"
+total_age # 444
+
+# approach 2: "for each munster, add munster's age to total_value if munster is male"
+
 total_age = 0
 munsters.each do |key, value|
   total_age += value['age'] if value['gender'] == 'male'
 end
-p total_age # 444
-
+total_age # 444
 
 # Exercise 6
 
@@ -114,8 +115,8 @@ arr = [a, b]
 arr[0] += 2
 arr[1][0] -= a
 
-p a == 2 # a was not affected by second-to-last line
-p b == [3, 8] # b was affected by last line
+a == 2 # => true
+b == [3, 8] # => true
 
 # Exercise 8
 
@@ -123,37 +124,37 @@ p b == [3, 8] # b was affected by last line
 
 hsh = {first: ['the', 'quick'], second: ['brown', 'fox'], third: ['jumped'], fourth: ['over', 'the', 'lazy', 'dog']}
 
-hsh.each_value do |value|
-  value.each do |str|
-    str.chars.each do |char|
-      puts char if %w(a e i o u).include?(char)
-    end
-  end
-end
+# hsh.each_value do |value|
+#   value.each do |str|
+#     str.chars.each do |char|
+#       puts char if %w(a e i o u).include?(char)
+#     end
+#   end
+# end
 
-# Exercise 9 TODO
+# Exercise 9
 
 # Given the following data structure, return a new array of the same structure but with the sub arrays being ordered (alphabetically or numerically as appropriate) in descending order.
 
 arr = [['b', 'c', 'a'], [2, 1, 3], ['blue', 'black', 'green']]
 
-new = arr.map do |elem|
+arr.map do |elem|
   elem.sort { |elem_elem1, elem_elem2| elem_elem2 <=> elem_elem1 }
 end
 
-p new
+# => [["c", "b", "a"], [3, 2, 1], ["green", "blue", "black"]]
 
 # Exercise 10
 
 # Given the following data structure and *without modifying the original array*, use the map method to return a new array identical in structure to the original but where the value of each integer is incremented by 1.
 
-result = [{a: 1}, {b: 2, c: 3}, {d: 4, e: 5, f: 6}].map do |hash|
+[{a: 1}, {b: 2, c: 3}, {d: 4, e: 5, f: 6}].map do |hash|
   incremented_hash = {}
   hash.each_key { |key| incremented_hash[key] = hash[key] + 1 }
   incremented_hash
 end
-p result
 
+# => [{:a=>2}, {:b=>3, :c=>4}, {:d=>5, :e=>6, :f=>7}]
 
 # Exercise 11
 
@@ -175,8 +176,35 @@ result # [[], [3], [9], [15]]
 
 arr = [[:a, 1], ['b', 'two'], ['sea', {c: 3}], [{a: 1, b: 2, c: 3, d: 4}, 'D']]
 
+hash = {}
+
+arr.each do |sub_arr|
+  hash[sub_arr[0]] = sub_arr[1]
+end
+
+hash # => {:a=>1, "b"=>"two", "sea"=>{:c=>3}, {:a=>1, :b=>2, :c=>3, :d=>4}=>"D"}
 
 # Exercise 13
+
+# Given the following data structure, return a new array containing the same sub-arrays as the original but ordered logically according to the numeric value of the odd integers they contain.
+
+arr = [[1, 6, 7], [1, 4, 9], [1, 8, 3]]
+
+# The sorted array should look like this:
+# [[1, 8, 3], [1, 6, 7], [1, 4, 9]]
+
+# [1, 8, 3] comes before [1, 6, 7] because 3 precedes 7
+# [1, 6, 7] comes before [1, 4, 9] because 7 precedes 9
+
+# select from arrays the odds and use the "odds arrays" as sort keys (i.e., rely on the sorting ability built into `Array#<=>`)
+
+arr.sort_by do |elem|
+  elem.select do |number|
+    number.odd?
+  end
+end
+
+# => [[1, 8, 3], [1, 6, 7], [1, 4, 9]]
 
 # Exercise 14
 
