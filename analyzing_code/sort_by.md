@@ -1,4 +1,4 @@
-Sort the following array by the numerical values of its elements:
+Problem: sort the following array by the numerical values of its elements:
 
 ```ruby
 ['0', '10', '3']
@@ -15,19 +15,19 @@ end
 
 What is a mental model to think of what `sort_by` is doing here?
 
-- Associate each element of the input array with a *sort key*, i.e., an object of the right kind for the particular way we want to sort (?). In this case, we need to associate each string with a number representation of that string. This results in a list of pairs of values, which we can represent by a nested array (this is probably not quite how Ruby represents this, but it should be something structurally similar):
+- Associate each element of the input array with a *sort key*, i.e., an object of the right kind for the particular way we want to sort (?). In this case, we need to associate each string with a number representation of that string. This results in a list of pairs of values, which we can represent by a nested array (this is probably not quite how Ruby represents it internally, but it should be something structurally similar):
 
 ```ruby
 [['0', 0], ['10', 10], ['3', 3]]
 ```
 
-- Sort the list of pairs of values by the second value, relying on the `<=>` method that comes with the second value. In our example, this results in
+- Sort the list of pairs of values by the second value, relying on the `<=>` method that comes with objects of the type of the second value. In our example, this results in
 
 ```ruby
 [['0', 0], ['3', 3], ['10', 10]]
 ```
 
-- Project the list of pairs of values to list containing the first value in each pair:
+- Project the list of pairs of values to a list containing only the first value of each pair:
 
 ```ruby
 ['0', '3', '10']
@@ -35,4 +35,4 @@ What is a mental model to think of what `sort_by` is doing here?
 
 - That's your sorted array.
 
-- Now what `sort_by` allows us to do is instead of doing all of this by ourselves: Simply specify (in the block that is passed to `sort_by`) the second component of each pair in the above list of pairs of values – and `sort_by` will take care of the rest.
+- Now what `sort_by` allows us to do is *instead of doing all of this by ourselves*: Simply specify (in the block that is passed to `sort_by`) what the second component of each pair in the above list of pairs of values looks like – and `sort_by` will take care of the rest.
