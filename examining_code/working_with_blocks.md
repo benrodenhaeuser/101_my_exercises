@@ -101,7 +101,7 @@ The first thing to notice here is the use of the all? method within the select b
 
 ## Example 8
 
-It can be tricky to work with different objects in a nested array if you want to only select nested elements based on certain criteria. For example, take the 2-element array below, where we only want to select integers greater than 13 but strings less than 6 characters. The trick here is that the elements are in a two layer nested array data structure.
+> It can be tricky to work with different objects in a nested array if you want to only select nested elements based on certain criteria. For example, take the 2-element array below, where we only want to select integers greater than 13 but strings less than 6 characters. The trick here is that the elements are in a two layer nested array data structure.
 
 	[[8, 13, 27], ['apple', 'banana', 'cantaloupe']].map do |arr|
 	  arr.select do |item|
@@ -114,27 +114,21 @@ It can be tricky to work with different objects in a nested array if you want to
 	end
 	# => [[27], ["apple"]]
 
-## Example 9
 
-	[[[1], [2], [3], [4]], [['a'], ['b'], ['c']]].map do |element1|
-	  element1.each do |element2|
-	    element2.partition do |element3|
-	      element3.size > 0
-	    end
-	  end
-	end
-	# => [[[1], [2], [3], [4]], [["a"], ["b"], ["c"]]]
+In this example, we are dealing with an inner block passed to a `select` invocation nested inside an outer block passed to a `map` invocation.
 
-## Example 10
+On line 1, the `Enumerable#map` method is invoked on the two-dimensional array `[[8, 13, 27], ['apple', 'banana', 'cantaloupe']]`. Along with the method invocation, a block is passed to `map` (the block spans from line 1 to line 9). Since `map` is an iterator, the block will run twice, once for each element of the array on which `map` was called.
 
-	[[[1, 2], [3, 4]], [5, 6]].map do |arr|
-	  arr.map do |el|
-	    if el.to_s.size == 1    # it's an integer
-	      el + 1
-	    else                    # it's an array
-	      el.map do |n|
-	        n + 1
-	      end
-	    end
-	  end
-	end
+The block parameter `arr` is bound to each of these two array elements in turn. Now inside of the block, another iterator method is invoked on `arr`: the `Enumerable#select` method. An inner block is passed to `select` as part of the method invocation (this block spans line 2 to 8). Since `select` is again an iterator method, the block will run once for each element of the inner array that is bound to `arr`. The inner block again has a block parameter, `item`, which is bound to the current element of `arr` on each iteration. Within the inner block, we find a conditional spanning line 3 to line 7 (the code from `if` to `end` on line 7).
+
+The return value of this conditional will determine whether an element of the current inner array is selected by `select` (i.e., ends up as an element in the array returned by `select`).
+
+Let's now look at the conditional in detail. Which branch of the conditional gets executed (the one on line 4, or the one on line 6) depends on whether the expression `item.to_s.to_i == item` is truthy (for the current element of the current inner array). This expression is truthy if `item` evaluates to an integer (at least approximately, the expression is not a perfect test for integer-hood). This is the case for all elements of the first inner array, and not the case for all elements of the second inner array.
+
+So for the first inner array, the first branch of the conditional will get executed for each of the elements of the inner array, returning the object `item > 13` evaluates to (which is going to be `true` or `false`).
+
+This object will also be the return value of the inner block, and its truthiness will be used by `select` to select the elements of the inner array of numbers. This means that on the first iteration of the `map` block, the invocation of `select` will return the array `[27]`, as `27` is the only number in the first inner array that is greater than 13.
+
+Turning to the second inner array, since `item.to_s.to_i == item` will evaluate to `false` for each of its elements, the second branch of the conditional will get executed for each of them. So the conditional will return the object `item.size < 6` evaluates to, which will again be either `true` or `false`. Again, the return value of the conditional is also the return value of the inner block, whose truthiness will be used by `select` to select elements of the (second, in this case) inner array. This means that on the second iteration of the `map` block, the invocation of `select` will return the array containing the single string `apple`, as `apple` is the only string in the second inner array that has less six characters.
+
+Tying this together, we see that the block passed to `map` will return `[27]` on the first iteration, and `['apple']` on the second iteration. Given the way `map` works (it uses the return value of the block for transformation), the return value of the `map` invocation is the nested array `[[27], ['apple']]`.
