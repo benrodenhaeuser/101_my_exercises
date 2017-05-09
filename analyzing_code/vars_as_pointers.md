@@ -9,31 +9,59 @@ arr[0] += 2
 arr[1][0] -= a
 ```
 
-## Values of `a` and `b`
+## Values of `a`, `b` and `arr`
 
 ```ruby
 a == 2
 b == [3, 8]
+arr == [4, [3, 8]]
 ```
 
 ## Explanation
 
-After line 3:
-- the local variable `a` points to the integer 2.
-- the local variable `b` points to an Array object, which contains two elements. Each element is a reference to an integer, 5 and 8.
-- the local variable `arr` points to another array object, which contains two elements. The first element is a reference to the integer 2, the second element is a reference to an array: the same array object to which `b` also points.
+### After line 3
 
-After line 4:
-- the first element of `arr` now points to the integer 4 (2 incremented by 2). This does not affect the reference of `a`. The reference of `a` used to be also referenced by the first element of `arr` – but no longer! Still, the reference of `a` remains the same: `a` points to the integer 2.
+- The local variable `a` points to the integer 2.
+- The local variable `b` points to an Array object with two objects. Each element is a reference to an integer (`5` and `8`).
+- The local variable `arr` points to *another* array object, which contains two elements. The first element is a reference to the integer `2`, the second element is a reference to an array: the same array object to which `b` also points.
+- In terms of a count, we now have three integer objects (`2`, `5`, `8`), two array objects (`[5, 8]` and `[2, [5, 8]]`), and three variables, `a`, `b` and `arr`.
 
-After line 5:
-- the array to which `arr` points has been changed. Namely, the first element of that array now points to 3 (5 decremented by the value of a). This affects the value of `b`, because the array to which `arr` points is the very same array to which `b` points! So `b` now points to the array `[3, 8]` (i.e., the same array as before, but with the first element changed).
+Here are the objects our variables point to:
 
-Summing up: `a` (still) points to the integer object 2, and `b` now points to the array object `[3, 8]`. This explains the final values we get.
+- `a` points to `2`.
+- `b` points to `[5, 8]`.
+- `arr` points to `[2, [5, 8]]`.
 
-This demonstrates the importance of thinking of variables as pointers to objects in memory.
+### After line 4
 
-It also demonstrates an important difference between numbers and arrays in Ruby: while number objects completely encapsulate their value, array objects contain references to further objects, one such reference for each element of the array. (???)
+- The first element of `arr` has been reassigned, and now points to the integer `4` (`2` incremented by `2`).
+- This change of reference for the array element does not affect the variable `a`, so `a` still points to `2`.
+- On top of the objects we used to have after line 3, we now have a new integer object, `4`, referenced by `arr[0]`.
+
+Summary of where variables point to:
+
+- `arr` points to `[4, [5, 8]]`.
+- `a` has not been affected, still points to `2`.
+- `b` has not been affected, still points to `[5, 8]`.
+
+### After line 5
+
+- The array to which `arr[1]` points has been changed. Namely, the first element of that array now points to `3` (5 decremented by the value of a). Notice that `b` (still) points to that very same array, which by now is changed to `[3, 8]`.
+- A new Integer object has come into existence, `3`. On the other hand, the Integer object `5` is now "gone" for all intents and purposes, as it is not referenced by any variable or array element anymore.
+
+In terms of variables as pointers:
+
+- `b` now points to `[3, 8]`.
+- `arr` points to `[4, [3, 8]]`.
+- `a` has not been affected, it still points to `2`.
+
+Hence what was said above:
+
+```ruby
+a == 2
+b == [3, 8]
+arr == [4, [3, 8]]
+```
 
 # Problem 2
 
@@ -59,7 +87,7 @@ After line 2:
 
 After line 4:
 
-- The reference of the single element of `arr` has been changed to a new string object `hellohello`. This is not the same string as our original `hello` string. So the value of `a` is not affected.
+- The single element of `arr` now points to a new string object `hellohello`. The new string object was obtained by calling the `*` method on the string `hello`, passing the argument `2`. This call did not affect the original string object to which `a` points. So the value of `a` is not affected.
 
 # Problem 3
 
