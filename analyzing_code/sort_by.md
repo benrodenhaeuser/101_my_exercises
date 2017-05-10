@@ -73,7 +73,7 @@ Or, using the shorthand notation from above:
 my_sort_by(arr, &:to_i) # => ['0', '3', '10']
 ```
 
-To get close to the original `sort_by`, one step is missing: we should implement `my_sort_by` as an `Enumerable` method:
+To get close to the original `sort_by`, one step is missing: we should implement `my_sort_by` as an `Enumerable` method. This is something we have not covered in 101, but in this case, no advanced knowledge of OOP is needed: 
 
 ```ruby
 module Enumerable
