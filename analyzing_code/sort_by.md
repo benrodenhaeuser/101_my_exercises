@@ -14,7 +14,7 @@ This can be achieved using `sort_by`:
 arr.sort_by do |string|
   string.to_i
 end
-# => ['0', '3', '10']
+# => ['0', '3', '10']s
 ```
 
 Or more briefly:
@@ -32,11 +32,9 @@ Based on this, I think what `sort_by` must be doing is something like this:
 2. Sort the array of pairs by the second component of each pair (relying on `<=>`).
 3. Project each pair onto its first component.
 
-The result of step 3 is your sorted array. Now presumably the above is not *quite* what is happening internally, but I am going to assume it's reasonably close.
+The result of step 3 is your sorted array. I have no way to check whether this is really "what is going on" internally. But one way to demonstrate that this is a viable mental model is to reimplement `sort_by` based on the this model.
 
-The `sort_by` method makes life very easy for us because all we have to do is describe what the "mapping" in step 1 should look like. How do we describe this? Either pass a block or a method symbol, as seen above. In the case of passing a block, the *return value of the block* is used to obtain the second component of that tuple the Ruby Docs talk about.
-
-We can actually mimick the above three steps in Ruby code fairly closely. Doing this spells out the conceptual link to the `map` method more clearly. For our running example, observe that the sorted array can be obtained as follows:
+First, we observe that we can actually mimick the above three steps in Ruby code fairly closely. This is where the `map` method comes into play. For our running example, observe that the sorted array can be obtained as follows:
 
 ```ruby
 arr.map { |elem| [elem, elem.to_i] } # step (1)
@@ -45,25 +43,9 @@ arr.map { |elem| [elem, elem.to_i] } # step (1)
 # => ['0', '3', '10']
 ```
 
-This also makes it tangible how `sort_by` is related to `sort` and `<=>`.
+Note that we have replaced the invocation of `sort_by` with calls to `map`, `sort` and `<=>`.
 
-Based on the above observations, we can actually implement our own `sort_by` functionality:
-
-```ruby
-def my_sort_by(collection, method_symbol)
-  collection.map { |elem| [elem, elem.send(method_symbol)] }
-    .sort { |pair1, pair2| pair1.last <=> pair2.last }
-    .map { |pair| pair.first }
-end
-```
-
-This method is called with a collection and a method symbol as arguments. Using our running example:
-
-```ruby
-my_sort_by(arr, :to_i) # => ['0', '3', '10']
-```
-
-How about a `my_sort_by` method that would work based on a block?
+Generalizing this idea, here is an implementation of a method `my_sort_by` that takes a collection as an argument, and a block:
 
 ```ruby
 def my_sort_by(collection)
@@ -77,4 +59,34 @@ Invoked with our running example:
 
 ```ruby
 my_sort_by(arr) { |elem| elem.to_i } # => ['0', '3', '10']
+```
+
+Or, using the shorthand notation from above:
+
+```ruby
+my_sort_by(arr, &:to_i) # => ['0', '3', '10']
+```
+
+We can also implement `my_sort_by` as an `Enumerable` method:
+
+```ruby
+module Enumerable
+  def my_sort_by
+    self.map { |elem| [elem, yield(elem)] }
+      .sort { |pair1, pair2| pair1.last <=> pair2.last }
+      .map { |pair| pair.first }
+  end
+end
+```
+
+Now we can call `my_sort_by` *on* a collection like this:
+
+```ruby
+arr.my_sort_by { |elem| elem.to_i } # => ['0', '3', '10']
+```
+
+Or like this:
+
+```ruby
+arr.my_sort_by(&:to_i) # => ['0', '3', '10']
 ```
