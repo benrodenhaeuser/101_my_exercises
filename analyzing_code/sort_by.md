@@ -32,7 +32,7 @@ One way to think of what `sort_by` is doing here is like this:
 
 The result of step 3 is your sorted array.
 
-`sort_by` makes life very easy for us because all we have to is describe what the "mapping" in step 1 should look like. To achieve this, we can either pass a block or a method symbol to `sort_by`, as seen above.
+`sort_by` makes life very easy for us because all we have to is describe what the "mapping" in step 1 should look like. To achieve this, we can either pass a block or a method symbol to `sort_by`, as seen above. In the case of the block, the return value of the block is the object that constitutes the second component of the pair for the current element.
 
 We can actually mimick these three steps in Ruby code fairly closely using the `map` method. For our running example, this looks like this:
 
@@ -43,7 +43,7 @@ arr.map { |elem| [elem, elem.to_i] } # step (1)
 # => ['0', '3', '10']
 ```
 
-This makes it conceptually clearer how `sort_by` is connected with `sort` and `<=>`, and it also brings out the connection to the `map` method.
+This makes it tangible how `sort_by` is connected with `sort` and `<=>`, and it also brings out the connection to the `map` method quite clearly.
 
 Based on the above observations, we can actually implement our own `sort_by` functionality:
 
@@ -77,4 +77,4 @@ Invoked with our running example:
 my_sort_by(arr) { |elem| elem.to_i } # => ['0', '3', '10']
 ```
 
-So now we have implemented our very own `my_sort_by` using `sort`, `<=>` and `map`. Of course, these implementations are quite useless from a practical standpoint, the point here for me was to gain some additional conceptual clarity.
+So now we have implemented two versions our very own `my_sort_by` using `sort`, `<=>` and `map`. Of course, these implementations are quite useless from a practical standpoint ...
