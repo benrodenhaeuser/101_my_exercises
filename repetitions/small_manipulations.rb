@@ -208,6 +208,60 @@ end
 
 # Exercise 14
 
+# Given this data structure write some code to return an array containing the colors *of the fruits* and the sizes *of the vegetables*. *The sizes should be uppercase and the colors should be capitalized.*
+
+hsh = {
+  'grape' => {type: 'fruit', colors: ['red', 'green'], size: 'small'},
+  'carrot' => {type: 'vegetable', colors: ['orange'], size: 'medium'},
+  'apple' => {type: 'fruit', colors: ['red', 'green'], size: 'medium'},
+  'apricot' => {type: 'fruit', colors: ['orange'], size: 'medium'},
+  'marrow' => {type: 'vegetable', colors: ['green'], size: 'large'},
+}
+
+# first (wrong) solution: this misses the fact that we want colors of fruits only and sizes of vegetables only!
+
+hsh.flat_map do |_, value|
+  [value[:colors].map { |color| color.capitalize }, value[:size].upcase]
+end
+# [["Red", "Green"], "SMALL", ["Orange"], "MEDIUM", ["Red", "Green"], "MEDIUM", ["Orange"], "MEDIUM", ["Green"], "LARGE"]
+
+# second (correct) solution
+
+hsh.map do |_, value|
+  if value[:type] == 'fruit'
+    value[:colors].map { |color| color.capitalize }
+  elsif value[:type] == 'vegetable'
+    value[:size].upcase
+  end
+end
+# => [["Red", "Green"], "MEDIUM", ["Red", "Green"], ["Orange"], "LARGE"]
+
 # Exercise 15
 
+# Given this data structure write some code to return an array which contains only the hashes where all the integers are even.
+
+arr = [{a: [1, 2, 3]}, {b: [2, 4, 6], c: [3, 6], d: [4]}, {e: [8], f: [6, 10]}]
+
+arr.select do |hash|
+  hash.all? do |_, value|
+    value.all? do |number|
+      number.even?
+    end
+  end
+end
+# => # => [{:e=>[8], :f=>[6, 10]}]
+
 # Exercise 16
+
+def generate_UUID
+  characters = ('0'..'9').to_a + ('a'..'f').to_a
+  sections = [8, 4, 4, 4, 12]
+  part_strings = sections.map do |section|
+    part_string = ''
+    section.times { part_string << characters.sample }
+    part_string
+  end
+  part_strings.join('-')
+end
+
+generate_UUID # => "6f256e0f-1ffa-1ceb-ce60-c2560d2025e8"
