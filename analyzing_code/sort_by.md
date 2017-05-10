@@ -45,7 +45,7 @@ arr.map { |elem| [elem, elem.to_i] } # step (1)
 
 This makes it conceptually clearer how `sort_by` is connected with `sort` and `<=>`, and it also brings out the connection to the `map` method.
 
-Based on the above observations, we can actually implement our own sort_by functionality:
+Based on the above observations, we can actually implement our own `sort_by` functionality:
 
 ```ruby
 def my_sort_by(collection, method_symbol)
@@ -61,7 +61,7 @@ This method may be called with a collection and method symbol. Using our running
 my_sort_by(arr, :to_i) # => ['0', '3', '10']
 ```
 
-How about a `my_sort_by` method that would work based on a block? This could look like this:
+How about a `my_sort_by` method that would work based on a block?
 
 ```ruby
 def my_sort_by(collection)
@@ -77,4 +77,4 @@ Invoked with our running example:
 my_sort_by(arr) { |elem| elem.to_i } # => ['0', '3', '10']
 ```
 
-So now we have implemented our own sort_by using `sort` and `<=>`.
+So now we have implemented our very own `my_sort_by` using `sort`, `<=>` and `map`. Of course, these implementations are quite useless from a practical standpoint, the point here for me was to gain some additional conceptual clarity.
