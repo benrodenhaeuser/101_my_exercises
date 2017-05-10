@@ -1,6 +1,8 @@
-Goal: Get clearer about the relationship between `sort_by` on the one hand, and `sort` and `<=>` on the other.
+*Goal:* Get clearer about the relationship between `sort_by` on the one hand, and `sort`, `map` and `<=>` on the other.
 
-Example: sort the following array by the numerical values of its elements:
+*Hunch:* `sort_by` is fairly closely related to the `map` method, not in terms of implementation, but in conceptual terms.
+
+*Example:* sort the following array by the numerical values of its elements:
 
 ```ruby
 arr = ['0', '10', '3']
@@ -24,13 +26,13 @@ arr.sort_by(&:to_i)
 
 One way to think of what `sort_by` is doing here is like this:
 
-1. It maps the array to an array of pairs.
-2. It thensorts that array by the second component of each pair (relying on `<=>`).
-3. It projects each pair onto its first component.
+1. Map the given array to an array of pairs (using the argument `sort_by` was given – a method symbol, or a block).
+2. Sort the array of pairs by the second component of each pair (relying on `<=>`).
+3. Project each pair onto its first component.
 
-`sort_by` makes life very easy for us because all we have to is specify what the "mapping" in step 1 should look like. To achieve this, we can either pass a block or a method symbol to `sort_by`, as seen above.
+`sort_by` makes life very easy for us because all we have to is describe what the "mapping" in step 1 should look like. To achieve this, we can either pass a block or a method symbol to `sort_by`, as seen above.
 
-We can actually mimick these three steps in Ruby code as follows. For our running example, this looks like this:
+We can actually mimick these three steps in Ruby code fairly closely using the `map` method. For our running example, this looks like this:
 
 ```ruby
 arr.map { |elem| [elem, elem.to_i] } # step (1)
