@@ -28,9 +28,9 @@ Now the question is how does `sort_by` do its magic? There is a hint in the Ruby
 
 Based on this, I think what `sort_by` must be doing is something like this:
 
-1. Map the given array to an array of pairs (using the argument `sort_by` was given – a method symbol, or a block).
+1. Map the given array to an array of pairs (using the block that was passed).
 2. Sort the array of pairs by the second component of each pair (relying on `<=>`).
-3. Project each pair onto its first component.
+3. Map each pair to its first component.
 
 The result of step 3 is your sorted array.
 
@@ -47,11 +47,11 @@ arr.map { |elem| [elem, elem.to_i] } # step (1)
 # => ['0', '3', '10']
 ```
 
-Note that we have replaced the invocation of `sort_by` with calls to `map`, `sort` and `<=>`.
+Note that we have replaced the invocation of `sort_by` with calls to `map`, `sort` and `<=>`. This is obviously a lot more cumbersome than using `sort_by` itself, but it's the crucial step towards our reimplementation.
 
-Ruby-internally, it seems unlikely that `sort_by` relies on the `sort` method. Presumably, *both* `sort` and `sort_by` rely on something like quicksort, implemented in C. But that is just a guess.
+Ruby-internally, it seems rather unlikely that `sort_by` relies on the `sort` method. Presumably, *both* `sort` and `sort_by` rely on something like quicksort, implemented in C. But that is just a guess.
 
-Generalizing this idea, here is an implementation of a method `my_sort_by` that takes a collection as an argument, and a block:
+Generalizing the above approach to our example, here is an implementation of a method `my_sort_by` that takes a collection as an argument, and a block:
 
 ```ruby
 def my_sort_by(collection)
@@ -73,7 +73,7 @@ Or, using the shorthand notation from above:
 my_sort_by(arr, &:to_i) # => ['0', '3', '10']
 ```
 
-We can also implement `my_sort_by` as an `Enumerable` method:
+To get close to the original `sort_by`, one step is missing: we should implement `my_sort_by` as an `Enumerable` method:
 
 ```ruby
 module Enumerable
@@ -96,3 +96,5 @@ Or like this:
 ```ruby
 arr.my_sort_by(&:to_i) # => ['0', '3', '10']
 ```
+
+So we have reinvented the wheel. Nice!
