@@ -1,4 +1,4 @@
-*Goal:* Get clearer about the relationship between `sort_by` on the one hand, and `sort`, `map` and `<=>` on the other.
+*Goal:* Get clearer about the relationship between `sort_by` on the one hand, and `sort` and `<=>` on the other.
 
 *Hunch:* `sort_by` is fairly closely related to the `map` method, not in terms of implementation, but in conceptual terms.
 
