@@ -386,7 +386,7 @@ loop do
       announce_overall_winner(player)
       break
     end
-    player = oppontent_of(player)
+    player = opponent_of(player)
 
     wait_for_user
   end

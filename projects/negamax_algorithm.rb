@@ -1,6 +1,6 @@
 # tic tac toe negamax algorithm
 
-# bare bones tic tac toe
+# tic tac toe rules
 
 M1 = '1'; M2 = '2'; M3 = '3'
 M4 = '4'; M5 = '5'; M6 = '6'
@@ -68,6 +68,8 @@ def result_for(player, board)
     0
   end
 end
+
+# negamax algorithm
 
 # initial version: brute force negamax score function
 
@@ -165,8 +167,7 @@ def get_unbeatable_move(board)
   evaluated[board].last
 end
 
-
-# fixing the return value: we don't want the solutions just to be created as a side effect of calling the negamax method, we want the best move to be the return value of that method
+# we don't want the solutions just to be created as a side effect of calling the negamax method, we want the best move to be the return value of that method
 
 def get_unbeatable_move(board)
   negamax(board).last
@@ -241,8 +242,7 @@ def negamax(board, player = :computer, best = {})
   end
 end
 
-
-# final naming
+# improved naming
 
 def get_best_move(board, player = :computer, best = {})
   return best[board][:move] if best[board]
@@ -286,26 +286,10 @@ def solve(board, player, evaluation)
 
   nil
 end
-#
-# after_two_moves = {
-#   '1' => false, '2' => :user, '3' => :computer,
-#   '4' => :user, '5' => false, '6' => false,
-#   '7' => false, '8' => false, '9' => false,
-# }
-#
-# best = {}
-#
-# solve(after_two_moves, :computer, best)
-#
-# p best
-# p best[after_two_moves]
 
+# issue: the keys of the `evaluation` hash keep changing, because they all represent a single board that keeps getting updated. against this background, it's surprising that the above actually works!
 
-
-
-# are we actually memoizing the board? the board keeps changing, so I am not sure why this is working at all.
-
-# the following writes the board to a string before saving it in the array.
+# improvement: use string representations of the board as hash keys
 
 def solve(board)
   evaluation = {}
@@ -346,8 +330,10 @@ solve(after_two_moves, :computer, best)
 p best
 p best[after_two_moves.to_s]
 
+# notice that we now have to take into account the hash/"hash as string" distinction when working with the solve method.
 
-# test cases
+
+# test boards
 
 initial_board = {
   '1' => false, '2' => false, '3' => false,
