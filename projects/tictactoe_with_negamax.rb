@@ -176,7 +176,7 @@ end
 def get_best_move(board)
   evaluation = {}
   solve(board, :computer, evaluation)
-  evaluation[board][:move]
+  evaluation[board.to_s][:move]
 end
 
 def solve(board, player, evaluation)
