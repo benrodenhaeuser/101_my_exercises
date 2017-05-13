@@ -42,7 +42,7 @@ M4 = '4'; M5 = '5'; M6 = '6'
 M7 = '7'; M8 = '8'; M9 = '9'
 
 # who makes the first move in the first round? (:user, :computer, :choose)
-FIRST_TO_MOVE = :user
+FIRST_TO_MOVE = :computer
 
 # number of round wins to achieve overall win
 WINS_TO_WIN_THE_GAME = 5
@@ -98,7 +98,7 @@ def undo(move, board)
   board[move] = false
 end
 
-def other(player)
+def opponent_of(player)
   case player
   when :computer then :user
   when :user then :computer
@@ -116,7 +116,7 @@ end
 def result_for(player, board)
   if winner?(board, player)
     1
-  elsif winner?(board, other(player))
+  elsif winner?(board, opponent_of(player))
     -1
   elsif full?(board)
     0
@@ -164,8 +164,8 @@ end
 
 def threat_for?(player, move, board)
   if available_moves(board).include?(move)
-    update(board, move, other(player))
-    result = winner?(board, other(player))
+    update(board, move, opponent_of(player))
+    result = winner?(board, opponent_of(player))
     undo(move, board)
     result
   end
@@ -180,20 +180,20 @@ def get_best_move(board)
 end
 
 def solve(board, player, evaluation)
-  return nil if evaluation[board]
+  return nil if evaluation[board.to_s]
 
   if done?(board)
-    evaluation[board] = { score: result_for(player, board), move: nil }
+    evaluation[board.to_s] = { score: result_for(player, board), move: nil }
   else
     options =
       available_moves(board).map do |move|
         update(board, move, player)
-        solve(board, other(player), evaluation)
-        option = { score: -evaluation[board][:score], move: move }
+        solve(board, opponent_of(player), evaluation)
+        option = { score: -evaluation[board.to_s][:score], move: move }
         undo(move, board)
         option
       end
-    evaluation[board] = options.max_by { |option| option[:score] }
+    evaluation[board.to_s] = options.max_by { |option| option[:score] }
   end
 
   nil
@@ -379,14 +379,14 @@ loop do
         break
       end
 
-      player = other(player)
+      player = opponent_of(player)
     end
 
     if scores[player] == WINS_TO_WIN_THE_GAME
       announce_overall_winner(player)
       break
     end
-    player = other(player)
+    player = oppontent_of(player)
 
     wait_for_user
   end

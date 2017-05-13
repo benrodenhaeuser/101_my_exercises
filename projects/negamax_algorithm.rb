@@ -267,27 +267,84 @@ end
 
 # how about using map?
 
-def get_best_move(board, player = :computer, best = {})
-  return best[board][:move] if best[board]
+def solve(board, player, evaluation)
+  return nil if evaluation[board]
 
   if done?(board)
-    best[board] = { score: result_for(player, board), move: nil}
-    nil
+    evaluation[board] = { score: result_for(player, board), move: nil }
   else
-    current_options = available_moves(board).map do |move|
-      update(board, move, player)
-      get_best_move(board, opponent_of(player), best) unless best[board]
-      current_option = { score: -best[board][:score], move: move }
-      undo(move, board)
-      current_option
-    end
-
-    best[board] = current_options.max_by { |option| option[:score] }
-    best[board][:move]
+    options =
+      available_moves(board).map do |move|
+        update(board, move, player)
+        solve(board, opponent_of(player), evaluation)
+        option = { score: -evaluation[board][:score], move: move }
+        undo(move, board)
+        option
+      end
+    evaluation[board] = options.max_by { |option| option[:score] }
   end
+
+  nil
+end
+#
+# after_two_moves = {
+#   '1' => false, '2' => :user, '3' => :computer,
+#   '4' => :user, '5' => false, '6' => false,
+#   '7' => false, '8' => false, '9' => false,
+# }
+#
+# best = {}
+#
+# solve(after_two_moves, :computer, best)
+#
+# p best
+# p best[after_two_moves]
+
+
+
+
+# are we actually memoizing the board? the board keeps changing, so I am not sure why this is working at all.
+
+# the following writes the board to a string before saving it in the array.
+
+def solve(board)
+  evaluation = {}
+  solve(board, :computer, evaluation)
+  evaluation[board.to_s][:move]
 end
 
+def solve(board, player, evaluation)
+  return nil if evaluation[board.to_s]
 
+  if done?(board)
+    evaluation[board.to_s] = { score: result_for(player, board), move: nil }
+  else
+    options =
+      available_moves(board).map do |move|
+        update(board, move, player)
+        solve(board, opponent_of(player), evaluation)
+        option = { score: -evaluation[board.to_s][:score], move: move }
+        undo(move, board)
+        option
+      end
+    evaluation[board.to_s] = options.max_by { |option| option[:score] }
+  end
+
+  nil
+end
+
+after_two_moves = {
+  '1' => false, '2' => :user, '3' => :computer,
+  '4' => :user, '5' => false, '6' => false,
+  '7' => false, '8' => false, '9' => false,
+}
+
+best = {}
+
+solve(after_two_moves, :computer, best)
+
+p best
+p best[after_two_moves.to_s]
 
 
 # test cases
