@@ -34,13 +34,13 @@ EXPLODER = [
 GRID_HEIGHT = 15
 GRID_WIDTH = 45
 LIFESPAN = 40 # number of ticks before game finishes
-DISPLAY_ALIVE = "\u25FD".encode('utf-8')
+DISPLAY_ALIVE = "\u25FD".encode('utf-8') # \u25FD
 DISPLAY_DEAD = "\u25FE".encode('utf-8')
 
 # game of life
 def start(seed, grid_height, grid_width, lifespan = nil)
   size_error = "Error: grid height and/or grid width too small for seed"
-  if seed.size >= grid_height || seed.first.size >= grid_width
+  if seed.size >= [grid_height, grid_width].min
     return puts size_error
   end
 
@@ -79,7 +79,7 @@ def embed(seed, grid)
   end
 end
 
-def game_of_life(grid, lifespan)
+def game_of_life(grid, lifespan = nil)
   loop do
     system 'clear'
 
@@ -87,12 +87,11 @@ def game_of_life(grid, lifespan)
 
     puts
     sleep 0.2
-    break if stable?(grid)
+    break if stable?(grid) || lifespan == 0
 
     tick(grid)
     if lifespan
       lifespan -= 1
-      break if lifespan == 0
     end
   end
 end
@@ -116,15 +115,14 @@ def display(grid)
 end
 
 def stable?(grid)
-  grid == build_next_grid(grid)
+  grid == get_next_grid(grid)
 end
 
 def tick(grid)
-  next_grid = build_next_grid(grid)
-  overwrite_values(grid, next_grid)
+  overwrite_values(grid, get_next_grid(grid))
 end
 
-def build_next_grid(grid)
+def get_next_grid(grid)
   next_grid = create_empty_square_grid(grid.size, grid.first.size)
 
   grid.each_with_index do |row, row_index|

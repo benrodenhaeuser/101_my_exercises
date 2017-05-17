@@ -1,5 +1,7 @@
 # tic tac toe negamax algorithm
 
+require 'benchmark'
+
 # tic tac toe rules
 
 M1 = '1'; M2 = '2'; M3 = '3'
@@ -323,14 +325,64 @@ after_two_moves = {
   '7' => false, '8' => false, '9' => false,
 }
 
-best = {}
-
-solve(after_two_moves, :computer, best)
-
-p best
-p best[after_two_moves.to_s]
+# best = {}
+#
+# solve(after_two_moves, :computer, best)
+#
+# p best
+# p best[after_two_moves.to_s]
 
 # notice that we now have to take into account the hash/"hash as string" distinction when working with the solve method.
+
+### NEW SECTION
+
+# Return to a method that simply computes the value of tictactoe
+
+def value(board, player)
+  if done?(board)
+    result_for(player, board)
+  else
+    values = available_moves(board).map do |move|
+      update(board, move, player)
+      value = -value(board, opponent_of(player))
+      undo(move, board)
+      value
+    end
+    values.max
+  end
+end
+
+initial_board = {
+  '1' => false, '2' => false, '3' => false,
+  '4' => false, '5' => false, '6' => false,
+  '7' => false, '8' => false, '9' => false,
+}
+
+# puts Benchmark.realtime { value(initial_board, :computer) }
+# 7.04 seconds
+
+# Now what happens if we try to memoize values in this more simple scenario?
+
+# Store the values in a hash and call value(board, player) only if not computed before.
+
+def value(board, player, memo = {})
+  return memo[board.to_s] if memo[board.to_s]
+
+  if done?(board)
+    memo[board.to_s] = result_for(player, board)
+  else
+    values = available_moves(board).map do |move|
+      update(board, move, player)
+      value = -value(board, opponent_of(player), memo)
+      undo(move, board)
+      value
+    end
+    memo[board.to_s] = values.max
+  end
+end
+
+# puts Benchmark.realtime { value(initial_board, :computer) }
+# 0.38 seconds
 
 
 # test boards
