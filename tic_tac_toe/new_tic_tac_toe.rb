@@ -2,8 +2,6 @@
 
 require 'benchmark'
 
-# MODELING THE GAME
-
 EMPTY_SLOT = ' '
 PLAYER1 = 'X'
 PLAYER2 = 'O'
@@ -16,11 +14,7 @@ def terminal?(state)
   (PLAYERS.any? { |player| winner?(player, state) }) || full?(state)
 end
 
-def full?(state)
-  state.none? { |value| value == EMPTY_SLOT }
-end
-
-def other(player)
+def opponent(player)
   player == PLAYER1 ? PLAYER2 : PLAYER1
 end
 
@@ -29,11 +23,15 @@ def winner?(player, state)
 end
 
 def payoff(player, state)
-  winner?(player, state) ? 1 : (winner?(other(player), state) ? -1 : 0)
+  winner?(player, state) ? 1 : (winner?(opponent(player), state) ? -1 : 0)
 end
 
 def empty_slots(state)
   (0..8).select { |index| state[index] == EMPTY_SLOT }
+end
+
+def full?(state)
+  empty_slots(state).empty?
 end
 
 def choices(player, state)
@@ -44,7 +42,7 @@ def choices(player, state)
   end
 end
 
-def get_choice(player, state, method)
+def get_choice(method, player, state)
   send(method, player, state)[:choice]
 end
 
@@ -53,48 +51,50 @@ def display(state)
   puts "> payoff: #{payoff(PLAYER1, state)}\n\n" if terminal?(state)
 end
 
-def play(state: INITIAL_STATE, player: PLAYER1, method: best_choice_memo)
+def play(method, state: INITIAL_STATE, player: PLAYER1)
   loop do
-    break if terminal?(state)
-    state = get_choice(player, state, method)
-    player = other(player)
+    break state if terminal?(state)
+    state = get_choice(method, player, state)
+    player = opponent(player)
   end
-  state
 end
 
-# SOLVING THE GAME
+# MAKING CHOICES
 
-# brute force negamax
+# random choice
 
+def random_choice(player, state)
+  { val: nil, choice: choices(player, state).sample }
+end
+
+# negamax
+
+# get *value* of state
 def nega_max(player, state)
   if terminal?(state)
     payoff(player, state)
   else
     choices(player, state).map do |choice|
-      -nega_max(other(player), choice)
+      -nega_max(opponent(player), choice)
     end.max
   end
 end
 
-# brute force best_choice
-
-# note: returns pair (value, choice)
+# get *value and best choice*
 
 def best_choice(player, state)
   if terminal?(state)
-    { value: payoff(player, state), choice: nil }
+    { val: payoff(player, state), choice: nil }
   else
-    values = choices(player, state).map do |choice|
-      { value: -(best_choice(other(player), choice))[:value], choice: choice }
-    end.max_by { |pair| pair[:value] }
+    choices(player, state).map do |choice|
+      { val: -(best_choice(opponent(player), choice))[:val], choice: choice }
+    end.max_by { |pair| pair[:val] }
   end
 end
 
-# puts Benchmark.realtime { best_choice }
-# 6.19 seconds
-
 # negamax with memoization
 
+# get *value* of state
 def nega_max_memo(player, state, table = {})
   return table[state] if table[state]
 
@@ -102,42 +102,35 @@ def nega_max_memo(player, state, table = {})
     table[state] = payoff(player, state)
   else
     values = choices(player, state).map do |choice|
-      -nega_max_memo(other(player), choice, memo)
+      -nega_max_memo(opponent(player), choice, memo)
     end
     table[state] = values.max
   end
 end
 
-# puts Benchmark.realtime { nega_max_memo }
-# 0.19 seconds
-
-# best choice with memoization
+# get *value and best choice*
 
 def best_choice_memo(player, state, table = {})
   return table[state] if table[state]
 
   if terminal?(state)
-    table[state] = { value: payoff(player, state), choice: nil }
+    table[state] = { val: payoff(player, state), choice: nil }
   else
     pairs = choices(player, state).map do |choice|
       {
-        value: -best_choice_memo(other(player), choice, table)[:value],
+        val: -best_choice_memo(opponent(player), choice, table)[:val],
         choice: choice
       }
     end
-    table[state] = pairs.max_by { |pair| pair[:value] }
+    table[state] = pairs.max_by { |pair| pair[:val] }
   end
 end
 
-# >> adjust play_a_game so that it uses best_choice_memo
-# puts Benchmark.realtime { display(play) }
-# 0.27 seconds
-
-# negamax with memoization and reflection
+# negamax with memoization and reflection (value only)
 
 def reflect(state)
-  state.dup.map do |value|
-    case value
+  state.dup.map do |val|
+    case val
     when PLAYER1 then PLAYER2
     when PLAYER2 then PLAYER1
     else
@@ -157,34 +150,39 @@ def nega_max_trans_refl(player, state, table = {})
     table[state] = payoff(player, state)
   else
     values = choices(player, state).map do |choice|
-      -nega_max_trans_refl(other(player), choice, memo)
+      -nega_max_trans_refl(opponent(player), choice, memo)
     end
     table[state] = values.max
   end
 end
 
-# puts Benchmark.realtime { nega_max_trans_refl }
-# 0.11 seconds
+# negamax with alpha-beta pruning (value only)
 
-# negamax with alpha-beta pruning
-
+# get value
 def alpha_beta(player, state, alpha = -10, beta = 10)
   if terminal?(state)
     payoff(player, state)
   else
     best = -10
     choices(player, state).each do |choice|
-      value = -alpha_beta(other(player), choice, -beta, -alpha)
-      best = [best, value].max
-      alpha = [alpha, value].max
+      val = -alpha_beta(opponent(player), choice, -beta, -alpha)
+      best = [best, val].max
+      alpha = [alpha, val].max
       break if alpha >= beta
     end
     best
   end
 end
 
-# puts Benchmark.realtime { alpha_beta }
-# 0.19 seconds
+# testing the best_choice_memo method
 
-puts "time elapsed: #{Benchmark.realtime { display(play(method: :best_choice_memo)) }} seconds"
-# 6.4 seconds
+puts Benchmark.realtime { display(play(:best_choice_memo)) }
+# =>
+# X X O
+# O O X
+# X O X
+# > payoff: 0
+#
+# 0.27486500004306436
+
+puts Benchmark.realtime { p best_choice_memo('X', INITIAL_STATE) }
