@@ -166,7 +166,7 @@ end
 
 # Medium 02
 
-Exercise 01
+## Question 01
 
 ```ruby
 def fun_with_ids
@@ -231,5 +231,172 @@ def fun_with_ids
   puts "b_inner is #{b_inner} with an id of: #{b_inner_id} INSIDE and: #{b_inner.object_id} AFTER the block." rescue puts "ugh ohhhhh"
   puts "c_inner is #{c_inner} with an id of: #{c_inner_id} INSIDE and: #{c_inner.object_id} AFTER the block." rescue puts "ugh ohhhhh"
   puts "d_inner is #{d_inner} with an id of: #{d_inner_id} INSIDE and: #{d_inner.object_id} AFTER the block.\n\n" rescue puts "ugh ohhhhh"
+end
+```
+
+## Question 03
+
+```ruby
+def tricky_method(a_string_param, an_array_param)
+  a_string_param += "rutabaga"
+  an_array_param << "rutabaga"
+end
+
+my_string = "pumpkins"
+my_array = ["pumpkins"]
+tricky_method(my_string, my_array)
+
+puts "My string looks like this now: #{my_string}"
+# => 'pumpkins'
+puts "My array looks like this now: #{my_array}"
+# => '['pumpkins', 'rutabaga']'
+```
+
+The method `tricky_method` takes two arguments, a string and an array. As the arguments are passed into the method, the objects they reference are assigned to the two method parameters, `a_string_param` and `an_array_param`. Within the method, the object referenced by `an_array_param` is mutated (by the call to `Array#<<`, which is a destructive method). But the object referenced by `a_string_param` is not mutated (the only method called on `a_string_param` is `+`, but `String#+` is not destructive). Since the object referenced by `an_array_param` is the same object that is also referenced by the local variable `my_array` outside, `my_array` will reference the array object `[`pumpkins`, `rutabaga`]` by the time it is `puts`ed.
+
+## Question 04
+
+```ruby
+def tricky_method_two(a_string_param, an_array_param)
+  a_string_param << 'rutabaga'
+  an_array_param = ['pumpkins', 'rutabaga']
+end
+
+my_string = "pumpkins"
+my_array = ["pumpkins"]
+tricky_method_two(my_string, my_array)
+
+puts "My string looks like this now: #{my_string}"
+puts "My array looks like this now: #{my_array}"
+```
+
+In this example, it is the string object referenced by `my_string` that is mutated, while the array object referenced by `my_array` is not mutated. Within the method, the local variable `an_array_param`, which is initially bound to the array object, is reassigned to a new array. But reassignment does not affect the object to which a variable points before the reassignment.
+
+
+## Question 05
+
+```ruby
+def color_valid(color)
+  if color == "blue" || color == "green"
+    true
+  else
+    false
+  end
+end
+```
+
+Simplified:
+
+```ruby
+def color_valid(color)
+  color == 'blue' || color == 'green'
+end
+```
+
+The expression `color == 'blue' || color == 'green'` will return `true` if at least one of its arguments evaluates to the object `true`, and `false` otherwise. But this is just what we want! So the expression is actually completely equivalent to the `if ... then ... end` conditional!
+
+# Hard 01
+
+
+## Question 01
+
+```ruby
+if false
+  greeting = “hello world”
+end
+
+greeting
+```
+
+`greeting` points to `nil`.
+
+## Question 02
+
+```ruby
+greetings = { a: 'hi' }
+informal_greeting = greetings[:a]
+informal_greeting << ' there'
+
+puts informal_greeting  #  => "hi there"
+puts greetings
+```
+
+The output is `{ a: 'hi there' }`.
+
+## Question 03
+
+```ruby
+def mess_with_vars(one, two, three)
+  one = two
+  two = three
+  three = one
+end
+
+one = "one"
+two = "two"
+three = "three"
+
+mess_with_vars(one, two, three)
+
+puts "one is: #{one}"
+puts "two is: #{two}"
+puts "three is: #{three}"
+```
+
+`one is: one`, `two is: two`, `three is: three`
+
+
+```ruby
+def mess_with_vars(one, two, three)
+  one = "two"
+  two = "three"
+  three = "one"
+end
+
+one = "one"
+two = "two"
+three = "three"
+
+mess_with_vars(one, two, three)
+
+puts "one is: #{one}"
+puts "two is: #{two}"
+puts "three is: #{three}"
+```
+
+`one is: one`, `two is: two`, `three is: three`
+
+```ruby
+def mess_with_vars(one, two, three)
+  one.gsub!("one","two")
+  two.gsub!("two","three")
+  three.gsub!("three","one")
+end
+
+one = "one"
+two = "two"
+three = "three"
+
+mess_with_vars(one, two, three)
+
+puts "one is: #{one}"
+puts "two is: #{two}"
+puts "three is: #{three}"
+```
+
+`one is: two`, `two is: three`, `three is: one`
+
+
+## Question 04
+
+```ruby
+def dot_separated_ip_address?(input_string)
+  dot_separated_words = input_string.split(".")
+  return false unless dot_separated_words.size == 4
+  while dot_separated_words.size > 0 do
+    word = dot_separated_words.pop
+    return false unless is_an_ip_number?(word)
+  end
+  return true
 end
 ```
