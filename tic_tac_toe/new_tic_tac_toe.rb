@@ -2,7 +2,7 @@
 
 require 'benchmark'
 
-LINE_LENGTH = 3 # 3 or 4
+LINE_LENGTH = 4 # 3 or 4
 BOARD_SIZE = LINE_LENGTH ** 2
 AVAILABLE = ' '
 P1 = 'X'
@@ -47,41 +47,42 @@ def winner?(player, state)
   win_lines.any? { |line| line.all? { |index| state[index] == player } }
 end
 
-def available_moves(state)
-  (0...BOARD_SIZE).select { |move| state[move] == AVAILABLE }
-end
-
 def no_moves?(state)
   available_moves(state).empty?
 end
 
-def get_move(method, player, state)
-  send(method, player, state)[:move]
+def available_moves(state)
+  (0...BOARD_SIZE).select { |move| state[move] == AVAILABLE }
 end
 
-def display(history, state)
-  p history
-  state.each_slice(LINE_LENGTH) { |slice| puts slice.join(' ') }
+def select_move(method, player, state)
+  send(method, player, state, :top)
 end
 
 def play(method, player = P1, state = INITIAL_STATE)
   history = []
   loop do
-    break [history, state] if terminal?(state)
-    move = get_move(method, player, state)
+    break if terminal?(state)
+    move = select_move(method, player, state)
     history << move
     state[move] = player
     player = opponent(player)
   end
+  [history, state]
 end
 
-# random choice: value and move
+def display(history, state)
+  state.each_slice(LINE_LENGTH) { |slice| puts slice.join(' ') }
+  puts history.join(' --> ')
+end
+
+# random choice (notice that the signature does not fit the earlier setup!)
 def random_choice(player, state)
-  { value: nil, move: available_moves(state).sample }
+  available_moves(state).sample
 end
 
-# negamax: value
-def value(player = P1, state = INITIAL_STATE)
+# brute force negamax: returns the VALUE of the calling state
+def value(player, state)
   if terminal?(state)
     payoff(player, state)
   else
@@ -95,146 +96,134 @@ def value(player = P1, state = INITIAL_STATE)
   end
 end
 
-# negamax: value and best move
-def best_move(player = P1, state = INITIAL_STATE)
-  if terminal?(state)
-    { value: payoff(player, state), move: nil }
-  else
-    values = available_moves(state).map do |move|
-      state[move] = player
-      value = {
-        value: -(best_move(opponent(player), state))[:value],
-        move: move
-      }
-      state[move] = AVAILABLE
-      value
-    end
-    values.max_by { |value| value[:value] }
-  end
+# brute force negamax: value/move
+def best_nega(player, state, top = false)
+  return payoff(player, state) if terminal?(state)
+  best = available_moves(state).map do |move|
+    state[move] = player
+    value = -(best_nega(opponent(player), state))
+    state[move] = AVAILABLE
+    [move, value]
+  end.max_by { |move, value| value }
+  top ? best.first : best.last
 end
 
-# negamax with transposition table: value
-def value_memo(player = P1, state = INITIAL_STATE, table = {})
-  return table[state.join] if table[state.join]
-
-  if terminal?(state)
+# negamax with transposition table: value/move
+def best_nega_memo(player, state, top = false, table = {})
+  if table[state.join]
+    table[state.join]
+  elsif terminal?(state)
     table[state.join] = payoff(player, state)
   else
-    values = available_moves(state).map do |move|
+    best = available_moves(state).map do |move|
       state[move] = player
-      value = -value_memo(opponent(player), state, table)
+      value = -best_nega_memo(opponent(player), state, false, table)
       state[move] = AVAILABLE
-      value
-    end
-    table[state.join] = values.max
+      [move, value]
+    end.max_by { |move, value| value }
+    top ? best.first : table[state.join] = best.last
   end
 end
 
-# negamax with transposition table: value and best move
-def best_move_memo(player = P1, state = INITIAL_STATE, table = {})
-  return table[state.join] if table[state.join]
+# ----- Exploit symmetries
 
-  if terminal?(state)
-    table[state.join] = { value: payoff(player, state), choice: nil }
-  else
-    values = available_moves(state).map do |move|
-      state[move] = player
-      value = {
-        value: -(best_move_memo(opponent(player), state, table))[:value],
-        move: move
-      }
-      state[move] = AVAILABLE
-      value
-    end
-    table[state.join] = values.shuffle.max_by { |value| value[:value] }
-  end
-end
-
-# negamax with memoization and "reflections": value
 def reflect(state)
-  state.map do |marker|
-    case marker
-    when P1 then P2
-    when P2 then P1
-    else
-      AVAILABLE
-    end
+  matrix = []
+  state.each_slice(LINE_LENGTH) { |line| matrix << line }
+  transpose(matrix)
+end
+
+def rotate(state)
+  matrix = []
+  state.each_slice(LINE_LENGTH) { |line| matrix << line }
+  rotate90(matrix)
+end
+
+def transpose(matrix)
+  (0...matrix.size).inject([]) do |new_matrix, col_index|
+    new_matrix << column(matrix, col_index)
   end
 end
 
-def best_move_reflect(player = P1, state = INITIAL_STATE, table = {})
-  if table[state.join]
-    return table[state.join]
-  elsif table[reflect(state).join]
-    return table[state.join] = {
-      value: -table[reflect(state).join][:value],
-      move: table[reflect(state).join][:move]
-    }
+def rotate90(matrix)
+  (0...matrix.first.size).inject([]) do |new_matrix, col_index|
+    new_matrix << column(matrix, col_index).reverse
   end
+end
 
-  if terminal?(state)
-    table[state.join] = { value: payoff(player, state), choice: nil }
+def column(matrix, col_index)
+  (0...matrix.size).inject([]) do |column, row_index|
+    column << matrix[row_index][col_index]
+  end
+end
+
+def find_value(state, table)
+  case
+  when table[state.join]
+    table[state.join]
+  when table[rotate(state).join]
+    table[rotate(state).join]
+  when table[rotate(rotate(state)).join]
+    table[rotate(rotate(state)).join]
+  when table[rotate(rotate(rotate(state))).join]
+    table[rotate(rotate(rotate(state))).join]
+  when table[reflect(state).join]
+    table[reflect(state).join]
+  when table[reflect(rotate(state)).join]
+    table[reflect(rotate(state)).join]
   else
-    values = available_moves(state).map do |move|
-      state[move] = player
-      value = {
-        value: -(best_move_reflect(opponent(player), state, table))[:value],
-        move: move
-      }
-      state[move] = AVAILABLE
-      value
-    end
-    table[state.join] = values.max_by { |value| value[:value] }
+    nil
   end
 end
 
-# alpha-beta pruning: value
-def value_prune(player = P1, state = INITIAL_STATE, alpha = -10, beta = 10)
+# table = { '  X      ' => 0 }
+# p find_value('X        '.chars, table)
+# p find_value('      X  '.chars, table)
+
+def best_nega_memo_sym(player, state, top = false, table = {})
+  value = find_value(state, table)
+  if value
+    return value
+  elsif terminal?(state)
+    table[state.join] = payoff(player, state)
+  else
+    best = available_moves(state).map do |move|
+      state[move] = player
+      value = -best_nega_memo_sym(opponent(player), state, false, table)
+      state[move] = AVAILABLE
+      [move, value]
+    end.max_by { |move, value| value }
+    if top
+      then best.first
+    else
+      table[state.join] = best.last
+    end
+  end
+end
+
+def alpha_beta(player, state, top = false, alpha = -10, beta = 10)
   if terminal?(state)
     payoff(player, state)
   else
-    best = -10
+    best = [nil, -10]
     available_moves(state).each do |move|
       state[move] = player
-      val = -value_prune(opponent(player), state, -beta, -alpha)
+      value = [move, -alpha_beta(opponent(player), state, false, -beta, -alpha)]
       state[move] = AVAILABLE
-      best = [best, val].max
-      alpha = [alpha, val].max
+      best = value if value.last > best.last
+      alpha = [alpha, value.last].max
       break if alpha >= beta
     end
-    best
+    top ? best.first : best.last
   end
 end
 
-# alpha-beta pruning: value and best move
-def best_move_prune(player = P1, state = INITIAL_STATE, alpha = -10, beta = 10)
-  if terminal?(state)
-    { value: payoff(player, state), move: nil }
-  else
-    best = { value: -10, move: nil}
-    available_moves(state).each do |move|
-      state[move] = player
-      value = {
-        value: -best_move_prune(opponent(player), state, -beta, -alpha)[:value],
-        move: move
-      }
-      state[move] = AVAILABLE
-      best = value if value[:value] > best[:value]
-      alpha = [alpha, value[:value]].max
-      break if alpha >= beta
-    end
-    best
-  end
-end
+# puts Benchmark.realtime { display(*play(:best_nega)) } # 3x3: 7.79
+# puts Benchmark.realtime { display(*play(:best_nega_memo)) } # 3x3: 0.15
+# puts Benchmark.realtime { display(*play(:best_nega_memo_sym)) } # 3x3: 0.21
+# puts Benchmark.realtime { display(*play(:alpha_beta)) } # 3x3: 0.26, 4x4: 45.20
 
-# useage: we could do, e.g.,
-display(*play(:best_move_reflect))
-# and then we get the following output:
-# [0, 4, 1, 2, 6, 3, 5, 7, 8]
-# X X O
-# O O X
-# X O X
-# the first line is the history of the game, the second is the final state of the game
+
 
 
 # tests and benchmarks
@@ -291,11 +280,12 @@ display(*play(:best_move_reflect))
 # 7.999828085303307e-06 ??
 
 # TODO:
-# - rotations
+# - cut down computation time by using insights about the game: symmetries
 # - alpha-beta-pruning
-# - get more interesting play on 4x4 board?
+# - get more interesting play on 4x4 board? ... watching computers play a solved game is boring
 
-# ... watching computers play a solved game is boring
+
+# ---- Putting up a fight
 
 # payoff method that favors long plays over short ones:
 
@@ -308,3 +298,89 @@ display(*play(:best_move_reflect))
 #     0
 #   end
 # end
+
+
+
+# OLD STUFF
+
+# negamax with memoization and "reflections": value
+
+# this is unlikely to be helpful
+
+def swap(state)
+  state.map do |marker|
+    case marker
+    when P1 then P2
+    when P2 then P1
+    else
+      AVAILABLE
+    end
+  end
+end
+
+def best_move_reflect(player, state, table = {})
+  if table[state.join]
+    return table[state.join]
+  elsif table[reflect(state).join]
+    return table[state.join] = {
+      value: -table[reflect(state).join][:value],
+      move: table[reflect(state).join][:move]
+    }
+  end
+
+  if terminal?(state)
+    table[state.join] = { value: payoff(player, state), choice: nil }
+  else
+    values = available_moves(state).map do |move|
+      state[move] = player
+      value = {
+        value: -(best_move_reflect(opponent(player), state, table))[:value],
+        move: move
+      }
+      state[move] = AVAILABLE
+      value
+    end
+    table[state.join] = values.max_by { |value| value[:value] }
+  end
+end
+
+## INTERESTING, BUT COMPLICATED
+
+# alpha-beta pruning: value
+def value_prune(player, state, alpha = -10, beta = 10)
+  if terminal?(state)
+    payoff(player, state)
+  else
+    best = -10
+    available_moves(state).each do |move|
+      state[move] = player
+      val = -value_prune(opponent(player), state, -beta, -alpha)
+      state[move] = AVAILABLE
+      best = [best, val].max
+      alpha = [alpha, val].max
+      break if alpha >= beta
+    end
+    best
+  end
+end
+
+# alpha-beta pruning: value and best move
+def best_move_prune(player, state, alpha = -10, beta = 10)
+  if terminal?(state)
+    { value: payoff(player, state), move: nil }
+  else
+    best = { value: -10, move: nil}
+    available_moves(state).each do |move|
+      state[move] = player
+      value = {
+        value: -best_move_prune(opponent(player), state, -beta, -alpha)[:value],
+        move: move
+      }
+      state[move] = AVAILABLE
+      best = value if value[:value] > best[:value]
+      alpha = [alpha, value[:value]].max
+      break if alpha >= beta
+    end
+    best
+  end
+end
