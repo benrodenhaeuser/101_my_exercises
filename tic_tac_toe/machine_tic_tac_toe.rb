@@ -108,6 +108,10 @@ def nega_max(player, state, top = false)
   top ? best.first : best.last
 end
 
+# ----- MEMOIZE VALUES
+
+# store values that have been computed already
+
 # negamax with transposition table: value/move
 def nega_max_memo(player, state, top = false, table = {})
   if table[state.join]
@@ -125,30 +129,25 @@ def nega_max_memo(player, state, top = false, table = {})
   end
 end
 
-# ----- Exploit symmetries
+# ----- EXPLOIT SYMMETRIES
 
 def column(state, index)
   state.each_slice(LINE_LENGTH).map { |slice| slice[index] }
 end
 
+# rotation by 90 degrees
 def rotate90(state)
   (0...LINE_LENGTH).flat_map { |index| column(state, index).reverse }
 end
 
+# rotation by 180 degrees
 def rotate180(state)
   state.reverse
 end
 
+# rotation by 270 degrees
 def rotate270(state)
-  rotate90(rotate180(state))
-end
-
-def reflect_horizontal(state)
-  state.each_slice(LINE_LENGTH).reverse_each.to_a.flatten
-end
-
-def reflect_vertical(state)
-  state.each_slice(LINE_LENGTH).map { |slice| slice.reverse }.flatten
+  (LINE_LENGTH - 1).downto(0).flat_map { |index| column(state, index) }
 end
 
 # reflection across main diagonal
@@ -156,15 +155,22 @@ def transpose(state)
   (0...LINE_LENGTH).flat_map { |index| column(state, index) }
 end
 
+# reflection across secondary diagonal
 def reflect_sec_diag(state)
-  reflect_horizontal(rotate90(state))
+  (LINE_LENGTH - 1).downto(0).flat_map { |index| column(state, index).reverse }
 end
 
-# table = { '  X      ' => 0 }
-# p find_value('X        '.chars, table)
-# p find_value('      X  '.chars, table)
+# reflection across the horizontal
+def reflect_horizontal(state)
+  state.each_slice(LINE_LENGTH).reverse_each.to_a.flatten
+end
 
-# first approach: save values to table as before, do more complex lookups
+# reflection across the vertical
+def reflect_vertical(state)
+  state.each_slice(LINE_LENGTH).flat_map { |slice| slice.reverse }
+end
+
+# APPROACH 1: make the table lookup more complex
 
 # => `find_value` returns the first truthy value
 def look_up_value(state, table)
@@ -192,17 +198,17 @@ def nega_max_sym_lookup(player, state, top = false, table = {})
   end
 end
 
-# second approach: make the table bigger, keep the lookup simple (intuition: this should be faster?)
+# APPROACH 2: save more values to table (lookup remains simple)
 
 def save_value(table, state, value)
   table[state.join] = value
-  table[transpose(state).join] = value
+  table[rotate90(state).join] = value
   table[rotate180(state).join] = value
+  table[rotate270(state).join] = value
+  table[transpose(state).join] = value
+  table[reflect_sec_diag(state).join] = value
   table[reflect_horizontal(state).join] = value
   table[reflect_vertical(state).join] = value
-  table[rotate90(state).join] = value
-  table[rotate270(state).join] = value
-  table[reflect_sec_diag(state).join] = value
 end
 
 def nega_max_sym_save(player, state, top = false, table = {})
@@ -226,7 +232,6 @@ def nega_max_sym_save(player, state, top = false, table = {})
     end
   end
 end
-
 
 ## ALPHA BETA
 
@@ -252,109 +257,29 @@ end
 
 player = 'X'
 state = INITIAL_STATE
-puts Benchmark.realtime { select_move(:nega_max, player, state)  }
-puts Benchmark.realtime { select_move(:nega_max_memo, player, state)  }
-puts Benchmark.realtime { select_move(:nega_max_sym_lookup, player, state)  }
-puts Benchmark.realtime { select_move(:nega_max_sym_save, player, state)  }
-puts Benchmark.realtime { select_move(:alpha_beta, player, state)  }
+Benchmark.bmbm { |x|
+   x.report("bf    ") { select_move(:nega_max, player, state) }
+   x.report("memo  ") { select_move(:nega_max_memo, player, state) }
+   x.report("lookup") { select_move(:nega_max_sym_lookup, player, state) }
+   x.report("save  ") { select_move(:nega_max_sym_save, player, state) }
+   x.report("ab    ") { select_move(:alpha_beta, player, state) }
+ }
 
-# evaluating nega_max, nega_max_memo, nega_max_memo_sym_lookup, nega_max_memo_save, alpha_beta
-# 6.63122499990277
-# 0.10882199998013675 # => dramatic improvement
-# 0.06530999997630715
-# 0.05884400010108948 # => twice as fast as simple memoization
-# 0.2322039999999106 # => a lot slower
+#              user     system      total        real
+# bf       6.870000   0.020000   6.890000 (  6.956717)
+# memo     0.110000   0.000000   0.110000 (  0.103978)
+# lookup   0.060000   0.000000   0.060000 (  0.058854)
+# save     0.050000   0.000000   0.050000 (  0.052267)
+# ab       0.220000   0.000000   0.220000 (  0.219942)
 
-
-# evaluating nega_max_memo, nega_max_sym_lookup and nega_max_sym_save:
-
-# with 3 symmetries:
-# 0.1149260001257062
-# 0.0848910000640899
-# 0.07703999988734722
-
-# with 4 symmetries:
-# 0.11069700005464256
-# 0.07320600003004074
-# 0.0637389998883009
-
-# with 5 symmetries:
-# 0.10677900002337992
-# 0.08197399997152388
-# 0.062005999963730574
-
-# with 6 symmetries:
-# 0.1030689999461174
-# 0.07358300010673702
-# 0.06651999987661839
-
-# with 7 symmetries:
-# 0.107700000051409
-# 0.06704799993894994
-# 0.05957600008696318
-
-# -> so the save approach cuts down the time in half (almost)
-# -> very sensitive to "primitive" operations (using to_s instead of join to save to hash neutralizes the speed gain!)
+# -> so the "save" approach cuts down the time in half (almost)
+# -> the "lookup" approach is almost as fast
+# -> sensitive to "primitive" operations (using to_s instead of join to save to hash neutralizes the speed gain (I think)!)
+# -> this raises the question if we could improve it by implementing the symmetries faster, and perhaps memoizing faster?
 
 ## OLD STUFF (unlikely to run anymore)
 
 # display(play(:best_move_memo, 'O', 'XO  X    '.chars))
-
-# on a 3x3 board
-# p best_move_prune
-# puts Benchmark.realtime{ display(play(:best_move_prune)) }
-# {:value=>0, :move=>0}
-# X X O
-# O O X
-# X O X
-# 0.26510000019334257
-
-# on a 4x4 board
-# p best_move_prune
-
-# {:value=>1, :move=>0}
-# X O O X
-# X O
-# X
-#
-# 45.212250999873504
-
-# ^ this looks odd! ... what is going on?
-
-# board = (AVAILABLE * BOARD_SIZE).chars
-# board[0] = 'X'
-# p best_move_prune('O', board) # => {:value=>-1, :move=>1}
-
-# ^ right. the problem is that the 'O' player just picks a move that leads to a loss ... because all moves lead to a loss.
-
-# we could try to fix this by giving better values to long losses over short losses => picking up a fight is encouraged.
-
-# display(play(:best_move_prune))
-
-# puts Benchmark.realtime { value }
-# puts Benchmark.realtime { best_move }
-# puts Benchmark.realtime { value_memo }
-# puts Benchmark.realtime { best_move_memo }
-# puts Benchmark.realtime { best_move_reflect }
-# 5.490661000134423
-# 6.565301000140607
-# 0.08823299990035594
-# 0.11649300018325448
-# 0.08672400005161762
-# 0.0003179998602718115
-
-# puts Benchmark.realtime { play(:best_move_memo) }
-# puts Benchmark.realtime { play(:best_move_reflect) }
-
-# 0.17226799996569753
-# 1.00000761449337e-05 ??
-# 7.999828085303307e-06 ??
-
-# TODO:
-# - cut down computation time by using insights about the game: symmetries
-# - alpha-beta-pruning
-# - get more interesting play on 4x4 board? ... watching computers play a solved game is boring
-
 
 # ---- Putting up a fight
 
