@@ -2,7 +2,7 @@
 
 require 'benchmark'
 
-LINE_LENGTH = 4 # 3 or 4
+LINE_LENGTH = 3 # 3 or 4
 BOARD_SIZE = LINE_LENGTH ** 2
 AVAILABLE = ' '
 P1 = 'X'
@@ -97,11 +97,11 @@ def value(player, state)
 end
 
 # brute force negamax: value/move
-def best_nega(player, state, top = false)
+def nega_max(player, state, top = false)
   return payoff(player, state) if terminal?(state)
   best = available_moves(state).map do |move|
     state[move] = player
-    value = -(best_nega(opponent(player), state))
+    value = -(nega_max(opponent(player), state))
     state[move] = AVAILABLE
     [move, value]
   end.max_by { |move, value| value }
@@ -109,7 +109,7 @@ def best_nega(player, state, top = false)
 end
 
 # negamax with transposition table: value/move
-def best_nega_memo(player, state, top = false, table = {})
+def nega_max_memo(player, state, top = false, table = {})
   if table[state.join]
     table[state.join]
   elsif terminal?(state)
@@ -117,7 +117,7 @@ def best_nega_memo(player, state, top = false, table = {})
   else
     best = available_moves(state).map do |move|
       state[move] = player
-      value = -best_nega_memo(opponent(player), state, false, table)
+      value = -nega_max_memo(opponent(player), state, false, table)
       state[move] = AVAILABLE
       [move, value]
     end.max_by { |move, value| value }
@@ -127,61 +127,52 @@ end
 
 # ----- Exploit symmetries
 
-def reflect(state)
-  matrix = []
-  state.each_slice(LINE_LENGTH) { |line| matrix << line }
-  transpose(matrix)
+def column(state, index)
+  state.each_slice(LINE_LENGTH).map { |slice| slice[index] }
 end
 
-def rotate(state)
-  matrix = []
-  state.each_slice(LINE_LENGTH) { |line| matrix << line }
-  rotate90(matrix)
+def rotate90(state)
+  (0...LINE_LENGTH).flat_map { |index| column(state, index).reverse }
 end
 
-def transpose(matrix)
-  (0...matrix.size).inject([]) do |new_matrix, col_index|
-    new_matrix << column(matrix, col_index)
-  end
+def rotate180(state)
+  state.reverse
 end
 
-def rotate90(matrix)
-  (0...matrix.first.size).inject([]) do |new_matrix, col_index|
-    new_matrix << column(matrix, col_index).reverse
-  end
+def rotate270(state)
+  rotate90(rotate180(state))
 end
 
-def column(matrix, col_index)
-  (0...matrix.size).inject([]) do |column, row_index|
-    column << matrix[row_index][col_index]
-  end
+def reflect_horizontal(state)
+  state.each_slice(LINE_LENGTH).reverse_each.to_a.flatten
 end
 
-def find_value(state, table)
-  case
-  when table[state.join]
-    table[state.join]
-  when table[rotate(state).join]
-    table[rotate(state).join]
-  when table[rotate(rotate(state)).join]
-    table[rotate(rotate(state)).join]
-  when table[rotate(rotate(rotate(state))).join]
-    table[rotate(rotate(rotate(state))).join]
-  when table[reflect(state).join]
-    table[reflect(state).join]
-  when table[reflect(rotate(state)).join]
-    table[reflect(rotate(state)).join]
-  else
-    nil
-  end
+def reflect_vertical(state)
+  state.each_slice(LINE_LENGTH).map { |slice| slice.reverse }.flatten
+end
+
+# reflection across main diagonal
+def transpose(state)
+  (0...LINE_LENGTH).flat_map { |index| column(state, index) }
+end
+
+def reflect_sec_diag(state)
+  reflect_horizontal(rotate90(state))
 end
 
 # table = { '  X      ' => 0 }
 # p find_value('X        '.chars, table)
 # p find_value('      X  '.chars, table)
 
-def best_nega_memo_sym(player, state, top = false, table = {})
-  value = find_value(state, table)
+# first approach: save values to table as before, do more complex lookups
+
+# => `find_value` returns the first truthy value
+def look_up_value(state, table)
+  table[state.join] || table[transpose(state).join] || table[rotate180(state).join] || table[reflect_horizontal(state).join] || table[reflect_vertical(state).join] || table[rotate90(state).join] || table[rotate270(state).join] || table[reflect_sec_diag(state).join]
+end
+
+def nega_max_sym_lookup(player, state, top = false, table = {})
+  value = look_up_value(state, table)
   if value
     return value
   elsif terminal?(state)
@@ -189,7 +180,7 @@ def best_nega_memo_sym(player, state, top = false, table = {})
   else
     best = available_moves(state).map do |move|
       state[move] = player
-      value = -best_nega_memo_sym(opponent(player), state, false, table)
+      value = -nega_max_sym_lookup(opponent(player), state, false, table)
       state[move] = AVAILABLE
       [move, value]
     end.max_by { |move, value| value }
@@ -200,6 +191,44 @@ def best_nega_memo_sym(player, state, top = false, table = {})
     end
   end
 end
+
+# second approach: make the table bigger, keep the lookup simple (intuition: this should be faster?)
+
+def save_value(table, state, value)
+  table[state.join] = value
+  table[transpose(state).join] = value
+  table[rotate180(state).join] = value
+  table[reflect_horizontal(state).join] = value
+  table[reflect_vertical(state).join] = value
+  table[rotate90(state).join] = value
+  table[rotate270(state).join] = value
+  table[reflect_sec_diag(state).join] = value
+end
+
+def nega_max_sym_save(player, state, top = false, table = {})
+  if table[state.join]
+    table[state.join]
+  elsif terminal?(state)
+    save_value(table, state, payoff(player, state))
+    payoff(player, state)
+  else
+    best = available_moves(state).map do |move|
+      state[move] = player
+      value = -nega_max_sym_save(opponent(player), state, false, table)
+      state[move] = AVAILABLE
+      [move, value]
+    end.max_by { |move, value| value }
+    if top
+      then best.first
+    else
+      save_value(table, state, best.last)
+      best.last
+    end
+  end
+end
+
+
+## ALPHA BETA
 
 def alpha_beta(player, state, top = false, alpha = -10, beta = 10)
   if terminal?(state)
@@ -218,15 +247,57 @@ def alpha_beta(player, state, top = false, alpha = -10, beta = 10)
   end
 end
 
-# puts Benchmark.realtime { display(*play(:best_nega)) } # 3x3: 7.79
-# puts Benchmark.realtime { display(*play(:best_nega_memo)) } # 3x3: 0.15
-# puts Benchmark.realtime { display(*play(:best_nega_memo_sym)) } # 3x3: 0.21
-# puts Benchmark.realtime { display(*play(:alpha_beta)) } # 3x3: 0.26, 4x4: 45.20
+
+# benchmarks
+
+player = 'X'
+state = INITIAL_STATE
+puts Benchmark.realtime { select_move(:nega_max, player, state)  }
+puts Benchmark.realtime { select_move(:nega_max_memo, player, state)  }
+puts Benchmark.realtime { select_move(:nega_max_sym_lookup, player, state)  }
+puts Benchmark.realtime { select_move(:nega_max_sym_save, player, state)  }
+puts Benchmark.realtime { select_move(:alpha_beta, player, state)  }
+
+# evaluating nega_max, nega_max_memo, nega_max_memo_sym_lookup, nega_max_memo_save, alpha_beta
+# 6.63122499990277
+# 0.10882199998013675 # => dramatic improvement
+# 0.06530999997630715
+# 0.05884400010108948 # => twice as fast as simple memoization
+# 0.2322039999999106 # => a lot slower
 
 
+# evaluating nega_max_memo, nega_max_sym_lookup and nega_max_sym_save:
 
+# with 3 symmetries:
+# 0.1149260001257062
+# 0.0848910000640899
+# 0.07703999988734722
 
-# tests and benchmarks
+# with 4 symmetries:
+# 0.11069700005464256
+# 0.07320600003004074
+# 0.0637389998883009
+
+# with 5 symmetries:
+# 0.10677900002337992
+# 0.08197399997152388
+# 0.062005999963730574
+
+# with 6 symmetries:
+# 0.1030689999461174
+# 0.07358300010673702
+# 0.06651999987661839
+
+# with 7 symmetries:
+# 0.107700000051409
+# 0.06704799993894994
+# 0.05957600008696318
+
+# -> so the save approach cuts down the time in half (almost)
+# -> very sensitive to "primitive" operations (using to_s instead of join to save to hash neutralizes the speed gain!)
+
+## OLD STUFF (unlikely to run anymore)
+
 # display(play(:best_move_memo, 'O', 'XO  X    '.chars))
 
 # on a 3x3 board
@@ -298,89 +369,3 @@ end
 #     0
 #   end
 # end
-
-
-
-# OLD STUFF
-
-# negamax with memoization and "reflections": value
-
-# this is unlikely to be helpful
-
-def swap(state)
-  state.map do |marker|
-    case marker
-    when P1 then P2
-    when P2 then P1
-    else
-      AVAILABLE
-    end
-  end
-end
-
-def best_move_reflect(player, state, table = {})
-  if table[state.join]
-    return table[state.join]
-  elsif table[reflect(state).join]
-    return table[state.join] = {
-      value: -table[reflect(state).join][:value],
-      move: table[reflect(state).join][:move]
-    }
-  end
-
-  if terminal?(state)
-    table[state.join] = { value: payoff(player, state), choice: nil }
-  else
-    values = available_moves(state).map do |move|
-      state[move] = player
-      value = {
-        value: -(best_move_reflect(opponent(player), state, table))[:value],
-        move: move
-      }
-      state[move] = AVAILABLE
-      value
-    end
-    table[state.join] = values.max_by { |value| value[:value] }
-  end
-end
-
-## INTERESTING, BUT COMPLICATED
-
-# alpha-beta pruning: value
-def value_prune(player, state, alpha = -10, beta = 10)
-  if terminal?(state)
-    payoff(player, state)
-  else
-    best = -10
-    available_moves(state).each do |move|
-      state[move] = player
-      val = -value_prune(opponent(player), state, -beta, -alpha)
-      state[move] = AVAILABLE
-      best = [best, val].max
-      alpha = [alpha, val].max
-      break if alpha >= beta
-    end
-    best
-  end
-end
-
-# alpha-beta pruning: value and best move
-def best_move_prune(player, state, alpha = -10, beta = 10)
-  if terminal?(state)
-    { value: payoff(player, state), move: nil }
-  else
-    best = { value: -10, move: nil}
-    available_moves(state).each do |move|
-      state[move] = player
-      value = {
-        value: -best_move_prune(opponent(player), state, -beta, -alpha)[:value],
-        move: move
-      }
-      state[move] = AVAILABLE
-      best = value if value[:value] > best[:value]
-      alpha = [alpha, value[:value]].max
-      break if alpha >= beta
-    end
-    best
-  end
-end
