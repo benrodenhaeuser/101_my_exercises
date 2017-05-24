@@ -74,78 +74,84 @@ def random_choice(player, state, top)
   available_moves(state).sample
 end
 
-# brute force negamax: returns the VALUE of the calling state
-def value(player, state)
+# brute force negamax
+def nega_max_value(player, state)
   if terminal?(state)
-    payoff(player, state)
+    best_value = payoff(player, state)
   else
-    values = available_moves(state).map do |move|
+    best_value = available_moves(state).map do |move|
       state[move] = player
-      value = -value(opponent(player), state)
+      value_for_move = -nega_max_value(opponent(player), state)
       state[move] = AVAILABLE
-      value
-    end
-    values.max
+      value_for_move
+    end.max
   end
+  best_value
 end
 
-# brute force negamax: returns move for the top-level call
+
+# brute force negamax: return *move* for the top-level call
 def nega_max(player, state, top = false)
   if terminal?(state)
-    return payoff(player, state)
+    best_value = payoff(player, state)
   else
     best = available_moves(state).map do |move|
       state[move] = player
-      value = -(nega_max(opponent(player), state))
+      value_for_move = -(nega_max(opponent(player), state))
       state[move] = AVAILABLE
-      [move, value]
-    end.max_by { |move, value| value }
-    top ? best.first : best.last
+      [move, value_for_move]
+    end.max_by { |move, value_for_move| value_for_move }
+    top ? (return best.first) : best_value = best.last
   end
+  best_value
 end
 
-# ----- MEMOIZE VALUES
-
-# TRANSPOSITION: avoids recomputing values for states that can be reached in several ways
-
-# negamax with transposition table: returns move for the top-level call
-
-# version 1:
-# def nega_max_memo(player, state, top = false, table = {})
-#   if table[state.join]
-#     table[state.join]
-#   elsif terminal?(state)
-#     table[state.join] = payoff(player, state)
-#   else
-#     best = available_moves(state).map do |move|
-#       state[move] = player
-#       value = -nega_max_memo(opponent(player), state, false, table)
-#       state[move] = AVAILABLE
-#       [move, value]
-#     end.max_by { |move, value| value }
-#     top ? best.first : table[state.join] = best.last
-#   end
-# end
-
-# version 2
-def nega_max_memo(player, state, top = false, table = {})
+# negamax with memoization: transposition table
+def nega_max_trans(player, state, top = false, table = {})
   unless table[state.join]
     if terminal?(state)
       table[state.join] = payoff(player, state)
     else
       best = available_moves(state).map do |move|
         state[move] = player
-        value = -nega_max_memo(opponent(player), state, false, table)
+        value_for_move = -nega_max_trans(opponent(player), state, false, table)
         state[move] = AVAILABLE
-        [move, value]
-      end.max_by { |move, value| value }
+        [move, value_for_move]
+      end.max_by { |move, value_for_move| value_for_move }
       top ? (return best.first) : table[state.join] = best.last
     end
   end
   table[state.join]
 end
 
-# SYMMETRIES: tic tac toe has 7 symmetries. computing one value, we get seven more "for free" (mathematically speaking).
+# negamax with memoization: symmetry table
+def nega_max_sym(player, state, top = false, table = {})
+  unless table[state.join]
+    if terminal?(state)
+      save_values(table, state, payoff(player, state))
+    else
+      best = available_moves(state).map do |move|
+        state[move] = player
+        value_for_move = -nega_max_sym(opponent(player), state, false, table)
+        state[move] = AVAILABLE
+        [move, value_for_move]
+      end.max_by { |move, value_for_move| value_for_move }
+      top ? (return best.first) : save_values(table, state, best.last)
+    end
+  end
+  table[state.join]
+end
+
+def save_values(table, state, value)
+  table[state.join] = value
+  table[rotate90(state).join] = value
+  table[rotate180(state).join] = value
+  table[rotate270(state).join] = value
+  table[transpose(state).join] = value
+  table[counter_transpose(state).join] = value
+  table[reflect_horizontal(state).join] = value
+  table[reflect_vertical(state).join] = value
+end
 
 # rotation by 90 degrees
 def rotate90(state)
@@ -168,7 +174,7 @@ def transpose(state)
 end
 
 # reflection across the counter diagonal
-def reflect_sec_diag(state)
+def counter_transpose(state)
   transpose(rotate180(state))
 end
 
@@ -183,19 +189,18 @@ def reflect_vertical(state)
 end
 
 # two approaches to taking symmetry into account:
-# (1) when doing the lookup in our transposition table, check whether the values of symmetric states have already been computed.
-# (2) when storing a value in the transposition table, store the values for all symmetric states along with it.
+# -- when storing a value in the transposition table, store the values for all symmetric states along with it (above).
+# -- when doing the lookup in our transposition table, check whether the values of symmetric states have already been computed (below).
 
-# -- approach 1: "complex lookup"
+# "lookup approach"
 
-# => `look_up_value` returns the first truthy value
 def look_up_value(state, table)
   table[state.join] ||
   table[rotate90(state).join] ||
   table[rotate180(state).join] ||
   table[rotate270(state).join] ||
   table[transpose(state).join] ||
-  table[reflect_sec_diag(state).join] ||
+  table[counter_transpose(state).join] ||
   table[reflect_horizontal(state).join] ||
   table[reflect_vertical(state).join]
 end
@@ -215,62 +220,6 @@ def nega_max_sym_lookup(player, state, top = false, table = {})
     end.max_by { |move, value| value }
     top ? best.first : table[state.join] = best.last
   end
-end
-
-# TODO: is there a way to make this read nicer?
-
-# -- approach 2: "make the table larger, keep the lookup simple"
-
-def save_value(table, state, value)
-  table[state.join] = value
-  table[rotate90(state).join] = value
-  table[rotate180(state).join] = value
-  table[rotate270(state).join] = value
-  table[transpose(state).join] = value
-  table[reflect_sec_diag(state).join] = value
-  table[reflect_horizontal(state).join] = value
-  table[reflect_vertical(state).join] = value
-end
-
-# # version 1:
-# def nega_max_sym_save(player, state, top = false, table = {})
-#   if table[state.join]
-#     table[state.join]
-#   elsif terminal?(state)
-#     save_value(table, state, payoff(player, state))
-#     payoff(player, state)
-#   else
-#     best = available_moves(state).map do |move|
-#       state[move] = player
-#       value = -nega_max_sym_save(opponent(player), state, false, table)
-#       state[move] = AVAILABLE
-#       [move, value]
-#     end.max_by { |move, value| value }
-#     if top
-#       best.first
-#     else
-#       save_value(table, state, best.last)
-#       best.last
-#     end
-#   end
-# end
-
-# version 2
-def nega_max_sym_save(player, state, top = false, table = {})
-  unless table[state.join]
-    if terminal?(state)
-      save_value(table, state, payoff(player, state))
-    else
-      best = available_moves(state).map do |move|
-        state[move] = player
-        value = -nega_max_sym_save(opponent(player), state, false, table)
-        state[move] = AVAILABLE
-        [move, value]
-      end.max_by { |move, value| value }
-      top ? (return best.first) : save_value(table, state, best.last)
-    end
-  end
-  table[state.join]
 end
 
 ## PRUNING
@@ -294,7 +243,6 @@ def alpha_beta(player, state, top = false, alpha = -10, beta = 10)
   end
 end
 
-
 # benchmarks
 
 ## 3x3 board
@@ -302,23 +250,24 @@ end
 player = 'X'
 state = INITIAL_STATE
 Benchmark.bmbm do |x|
-#   x.report("rand  ") { select_move(:random_choice, player, state) }
-#   x.report("bf    ") { select_move(:nega_max, player, state) }
-  x.report("memo  ") { select_move(:nega_max_memo, player, state) }
+  x.report("rand  ") { select_move(:random_choice, player, state) }
+  x.report("bf    ") { select_move(:nega_max, player, state) }
+  x.report("trans ") { select_move(:nega_max_trans, player, state) }
+  x.report("sym   ") { select_move(:nega_max_sym, player, state) }
   x.report("lookup") { select_move(:nega_max_sym_lookup, player, state) }
-  x.report("save  ") { select_move(:nega_max_sym_save, player, state) }
   x.report("ab    ") { select_move(:alpha_beta, player, state) }
 end
 
 =begin
 
              user     system      total        real
-rand     0.000000   0.000000   0.000000 (  0.000019)
-bf       6.370000   0.010000   6.380000 (  6.397314)
-memo     0.110000   0.000000   0.110000 (  0.102984)
-lookup   0.050000   0.000000   0.050000 (  0.055518)
-save     0.050000   0.000000   0.050000 (  0.042032)
-ab       0.210000   0.000000   0.210000 (  0.209102)
+rand     0.000000   0.000000   0.000000 (  0.000012)
+
+bf       5.680000   0.050000   5.730000 (  5.781872)
+trans    0.100000   0.000000   0.100000 (  0.105050)
+sym      0.050000   0.000000   0.050000 (  0.048830)
+lookup   0.060000   0.000000   0.060000 (  0.058844)
+ab       0.190000   0.000000   0.190000 (  0.193677)
 
 -> memoizing values is a dramatic improvement over brute force negamax
 -> exploiting symmetries allows us reduce computation time by half
@@ -333,7 +282,7 @@ ab       0.210000   0.000000   0.210000 (  0.209102)
 # player = 'X'
 # state = INITIAL_STATE
 # Benchmark.bmbm do |x|
-#   x.report("memo  ") { select_move(:nega_max_memo, player, state) }
+#   x.report("memo  ") { select_move(:nega_max_trans, player, state) }
 #   x.report("save  ") { select_move(:nega_max_sym_save, player, state) }
 #   x.report("ab    ") { select_move(:alpha_beta, player, state) }
 # end
