@@ -1,5 +1,23 @@
 # quicksort
 
+=begin
+
+QUICKSORT:
+
+quicksort(array, left_pointer, right_pointer)
+if left < right
+  pivot_pointer = partition(array, left_pointer, right_pointer)
+  quicksort(array, left_pointer, pivot_pointer - 1)
+  quicksort(array, pivot_pointer + 1, right_pointer)
+
+PARTITION:
+
+
+
+=end
+
+
+
 def swap(array, index1, index2)
   temp = array[index1]
   array[index1] = array[index2]
@@ -33,10 +51,10 @@ def partition(array, left_pointer, right_pointer)
 end
 
 def quick_sort(array, left_pointer = 0, right_pointer = array.size - 1)
-  if right_pointer - left_pointer > 0
-    new_pointer = partition(array, left_pointer, right_pointer)
-    quick_sort(array, left_pointer, new_pointer - 1)
-    quick_sort(array, new_pointer + 1, right_pointer)
+  if right_pointer - left_pointer > 0 
+    pivot_pointer = partition(array, left_pointer, right_pointer)
+    quick_sort(array, left_pointer, pivot_pointer - 1)
+    quick_sort(array, pivot_pointer + 1, right_pointer)
   end
   array
 end

@@ -22,3 +22,21 @@ end
 p bubble_sort([])
 p bubble_sort([1])
 p bubble_sort([10, 9, 8, 3, 6])
+
+
+def bubble_sort(array)
+  (array.size).downto(0) do |stop_index|
+    swapped = false
+
+    (1...stop_index).each do |index|
+      if array[index] < array[index - 1]
+        array[index - 1], array[index] = array[index], array[index - 1]
+        swapped = true
+      end
+    end
+
+    break unless swapped
+  end
+
+  array
+end
