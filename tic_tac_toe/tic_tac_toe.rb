@@ -303,7 +303,7 @@ def nega_max_choices(player, state, top = false, table = {})
         unmake(move, state)
         [move, value_for_move]
       end.max_by { |move, value_for_move| value_for_move }
-      top ? (return best.first) : table[state.join] = best.last
+      top ? (return best.first) : save_values(table, state, best.last)
     end
   end
   table[state.join]
@@ -346,11 +346,11 @@ end
 $calls = 0
 table = {}
 puts Benchmark.realtime { nega_max_choices(P1, INITIAL_STATE, :top, table) }
-# ^ 0.38 (so this is the fastest method I have tried.)
+# ^ 0.14 (so this is not particularly fast: it's about the speed of the transposition table approach)
 p $calls
-# ^ 8307 (this is fewer calls than with a transposition table, but more than with a symmetry table.)
+# ^ 2097
 p table.size
-# ^ 3480 (this is less than the number of distinct positions, but more than the number of distinct positions up to symmetry — so it actually contains some states that are symmetric to each other.).
+# ^ 4738
 
 display(*play(:nega_max_choices))
 # X X O

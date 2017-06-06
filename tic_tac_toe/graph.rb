@@ -157,13 +157,13 @@ end
 # p choices(INITIAL_STATE) # [0, 1, 4]
 
 def build_graph(player, state, graph)
-  unless terminal?(state)
-    current_str = state.join
-    graph[current_str] = {}
+  current_as_string = state.join
+  unless graph[current_as_string]
+    graph[current_as_string] = {}
     choices(state).each do |choice|
       state[choice] = player
-      next_str = state.join
-      graph[current_str][choice] = next_str
+      next_as_string = state.join
+      graph[current_as_string][choice] = next_as_string
       build_graph(opponent(player), state, graph)
       state[choice] = AVAILABLE
     end
@@ -171,52 +171,30 @@ def build_graph(player, state, graph)
 end
 
 graph = {}
+puts Benchmark.realtime {build_graph(P1, INITIAL_STATE, graph)} # 0.45 seconds
+p graph.keys.size # 2732 (??) (so states do not occur up to symmetry in the graph – why? because symmetric states cannot be fully excluded by identifying moves)
+# graph.keys.each do |key|
+#   puts key
+# end
 
-puts Benchmark.realtime {build_graph(P1, INITIAL_STATE, graph)} # 2 seconds
-p graph.size # 2732 (??)
-
-p graph[INITIAL_STATE.join]
-p graph["X        "]
+# p graph[INITIAL_STATE.join]
+# p graph["X        "]
 
 # {"         "=>{0=>"X        ", 1=>" X       ", 4=>"    X    "}}
 
-# ... but we need recursion here!
-
-## >> Yet another approach: Adapt Move Generation
-
-# returns a value
-def nega_max_choices(player, state, top = false, table = {})
-  $calls += 1
-  unless table[state.join]
-    if terminal?(state)
-      table[state.join] = payoff(player, state)
-    else
-      best = choices(available_moves(state), state).map do |move|
-        make(move, player, state)
-        value_for_move = -nega_max_choices(opponent(player), state, false, table)
-        # p state
-        unmake(move, state)
-        [move, value_for_move]
-      end.max_by { |move, value_for_move| value_for_move }
-      top ? (return best.first) : table[state.join] = best.last
-    end
-  end
-  table[state.join]
-end
+# so this is slow
 
 #
-#
-# $calls = 0
-# table = {}
-# puts Benchmark.realtime { nega_max_choices(P1, INITIAL_STATE, :top, table) }
-# # ^ 0.38 (this is the fastest method I have seen. but does it actually work?)
-# p $calls
-# # ^ 8307 (now why is that? this is fewer calls than with a transposition table, but more than with a symmetry table.)
-# p table.size
-# # ^ 3480 (and why is that? this is *less* than the number of distinct positions), but more than the number of positions up to symmetry — which kind of makes sense)
-#
-# display(*play(:nega_max_choices))
-# # X X O
-# # O O X
-# # X O X
-# # 0 --> 4 --> 1 --> 2 --> 6 --> 3 --> 5 --> 7 --> 8
+# def create_layers
+#   all_states = [[INITIAL_STATE]]
+#   9.times do
+#     next_states = []
+#     all_states.last.each do |state|
+#       choices(state).each do |move|
+#         new_state = state.dup
+#         new_state[move] = 'X'
+#         next_states << new_state
+#       end
+#     end
+#   end
+# end
