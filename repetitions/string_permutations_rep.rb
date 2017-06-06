@@ -17,9 +17,7 @@ I. understanding the problem.
     - 'ab' has two permutations
     - 'bb' has only one
 
-- let us first assume that we have a string of mutually distinct characters
-  - 'abc' is such a string
-  - 'abb' is not
+- one idea to take care of repetitions is to remove them at the end of the algorithm. another idea is to avoid building them in the first place.
 
 II. data structure
 
@@ -50,11 +48,19 @@ def permutations(string)
 end
 
 puts Benchmark.realtime { permutations('abcd') } # 0.0001009996049106121
+puts Benchmark.realtime { permutations('abcdef') } #
 puts Benchmark.realtime { permutations('aaaaaaaaa') } # 0.9907749998383224
 
 # => the call to uniq at the end is heavy-handed. much better to not generate those permutations in the first place.
 
 # solution 2
+
+def permutations(string)
+  permus = []
+  stock = build_stock(string)
+  generate_permutations(stock, '', permus)
+  permus
+end
 
 def build_stock(string)
   stock = Hash.new { |hash, key| hash[key] = 0 }
@@ -62,13 +68,6 @@ def build_stock(string)
     stock[char] += 1
   end
   stock
-end
-
-def permutations(string)
-  permus = []
-  stock = build_stock(string)
-  generate_permutations(stock, '', permus)
-  permus
 end
 
 def generate_permutations(stock, chosen, permus)
@@ -88,6 +87,7 @@ end
 
 
 puts Benchmark.realtime { permutations('abcd') } # 0.00016999989748001099
+puts Benchmark.realtime { permutations('abcdef') } #
 puts Benchmark.realtime { permutations('aaaaaaaaa') } # 2.2999942302703857e-05
 
-# the second solution is a lot more efficient for repetitive strings
+# the second solution is *a lot* more efficient for repetitive strings (see above) — which was kind of the point
