@@ -23,6 +23,7 @@ p bubble_sort([])
 p bubble_sort([1])
 p bubble_sort([10, 9, 8, 3, 6])
 
+# bubble sort with a small optimization: since bubble sort sorts the array from right to left, we do not have to make full passes through the array on each iteration, but we can stop one index earlier every time.
 
 def bubble_sort(array)
   (array.size).downto(0) do |stop_index|
