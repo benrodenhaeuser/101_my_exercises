@@ -13,7 +13,7 @@ there are 7 symmetries:
 - reflection across the horizontal (swap slices)
 - reflection across the vertical (reverse slices)
 
-the value of a state is the same as the value of all symmetric states.
+symmetric boards are strategically equivalent.
 
 =end
 

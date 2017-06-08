@@ -1,28 +1,34 @@
 # place n queens on a n by n board so that no queen attacks any of the others
 
-SIZE = 8
-OPEN = 0
-QUEEN = 1
+require 'benchmark'
+
+SIZE = 20
+
+
+# SOLUTION 1
+
+OPEN_SQUARE = 0
+QUEEN_SQUARE = 1
 
 def initialize_board
-  row = []
-  SIZE.times { row << OPEN }
-  board = []
-  SIZE.times { board << row.clone }
-  board
+  (0...SIZE).map do |row|
+    (0...SIZE).map do
+      OPEN_SQUARE
+    end
+  end
 end
 
 def open_row?(board, row_idx)
-  board[row_idx].all? { |elem| elem == OPEN }
+  board[row_idx].all? { |elem| elem == OPEN_SQUARE }
 end
 
 def open_column?(board, col_idx)
-  board.all? { |row| row[col_idx] == OPEN }
+  board.all? { |row| row[col_idx] == OPEN_SQUARE }
 end
 
 def open_up_diag?(board, row_idx, col_idx)
   up_diag_slots = get_up_diag_slots(board, row_idx, col_idx)
-  up_diag_slots.all? { |row_idx, col_idx| board[row_idx][col_idx] == OPEN }
+  up_diag_slots.all? { |row_idx, col_idx| board[row_idx][col_idx] == OPEN_SQUARE }
 end
 
 def get_up_diag_slots(board, row_idx, col_idx)
@@ -50,7 +56,7 @@ end
 
 def open_down_diag?(board, row_idx, col_idx)
   down_diag_slots = get_down_diag_slots(board, row_idx, col_idx)
-  down_diag_slots.all? { |row_idx, col_idx| board[row_idx][col_idx] == OPEN }
+  down_diag_slots.all? { |row_idx, col_idx| board[row_idx][col_idx] == OPEN_SQUARE }
 end
 
 def get_down_diag_slots(board, row_idx, col_idx)
@@ -79,15 +85,15 @@ end
 
 def open_slots(board)
   slots = []
-  (0...SIZE).each do |row|
-    (0...SIZE).each do |col|
-      slots << [row, col] if board[row][col] == OPEN
+  (0...SIZE).each do |row_idx|
+    (0...SIZE).each do |col_idx|
+      slots << [row_idx, col_idx] if board[row_idx][col_idx] == OPEN_SQUARE
     end
   end
   slots
 end
 
-def consistent_choices(board)
+def constrained_choices(board)
   open_slots(board).select do |row_idx, col_idx|
     open_row?(board, row_idx) &&
     open_column?(board, col_idx) &&
@@ -97,36 +103,27 @@ def consistent_choices(board)
 end
 
 def make_move(board, row_idx, col_idx)
-  board[row_idx][col_idx] = QUEEN
+  board[row_idx][col_idx] = QUEEN_SQUARE
 end
 
 def unmake_move(board, row_idx, col_idx)
-  board[row_idx][col_idx] = OPEN
+  board[row_idx][col_idx] = OPEN_SQUARE
 end
 
-def find_solution(board, number_of_choices = 0, solutions = [])
+def find_a_solution(board, number_of_choices = 0, solutions = [])
   solutions << board.inspect if number_of_choices == SIZE
-  consistent_choices(board).each do |row_idx, col_idx|
+  constrained_choices(board).each do |row_idx, col_idx|
     return solutions if solutions != []
     make_move(board, row_idx, col_idx)
     number_of_choices += 1
-    find_solution(board, number_of_choices, solutions)
+    find_a_solution(board, number_of_choices, solutions)
     unmake_move(board, row_idx, col_idx)
     number_of_choices -= 1
   end
   nil
 end
 
-find_solution(initialize_board)[0]
-
-# 4 by 4:
-#
-# [0, 1, 0, 0]
-# [0, 0, 0, 1]
-# [1, 0, 0, 0]
-# [0, 0, 1, 0]
-#
-# 0.00051099993288517 seconds
+# puts Benchmark.realtime { find_a_solution(initialize_board)[0] }
 
 # 8 by 8:
 #
@@ -139,4 +136,34 @@ find_solution(initialize_board)[0]
 # [0, 1, 0, 0, 0, 0, 0, 0]
 # [0, 0, 0, 1, 0, 0, 0, 0]
 #
-# 1.9962479998357594 seconds
+# 1.9145939997397363 seconds
+
+# SOLUTION 2: different data structure
+
+def generate_solutions(queens = [], solutions = [])
+  solutions << queens.inspect if queens.size == SIZE
+  constrained_choices(queens).each do |choice|
+    return solutions if solutions != []
+    queens << choice
+    generate_solutions(queens, solutions)
+    queens.pop
+  end
+  nil
+end
+
+def constrained_choices(queens)
+  constrained_choices = []
+  (0...SIZE).select do |choice|
+    queens.all? { |queen| queen != choice } &&
+    queens.all? { |queen| queen + queens.index(queen) != choice + queens.size   } &&
+    queens.all? { |queen| queen - queens.index(queen) != choice - queens.size  }
+  end
+end
+
+puts Benchmark.realtime { generate_solutions() }
+
+# 8 by 8:
+# 0.0013069999404251575
+
+# 20 by 20:
+# 8.46816199971363
