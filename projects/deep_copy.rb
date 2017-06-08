@@ -24,27 +24,6 @@ def deep_copy(obj)
     obj_copy = obj
   elsif string?(obj)
     obj_copy = obj.clone
-  elsif array?(obj) # respond_to?(:each)
-    obj_copy = Array.new
-    obj.each { |value| obj_copy << deep_copy(value) }
-  elsif hash?(obj)
-    obj_copy = Hash.new
-    obj.each { |key, value| obj_copy[deep_copy(key)] = deep_copy(value) }
-
-  else
-    puts "#{obj} cannot be copied!"
-  end
-
-  obj_copy
-end
-
-# alternative way, relying on duck typing
-
-def deep_copy(obj)
-  if immutable?(obj)
-    obj_copy = obj
-  elsif string?(obj)
-    obj_copy = obj.clone
   elsif array?(obj)
     obj_copy = Array.new
     obj.each { |value| obj_copy << deep_copy(value) }
@@ -58,8 +37,6 @@ def deep_copy(obj)
 
   obj_copy
 end
-
-
 
 # test
 
