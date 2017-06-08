@@ -2,7 +2,7 @@
 
 require 'benchmark'
 
-SIZE = 20
+SIZE = 8
 
 
 # SOLUTION 1
@@ -143,24 +143,41 @@ end
 def generate_solutions(queens = [], solutions = [])
   solutions << queens.inspect if queens.size == SIZE
   constrained_choices(queens).each do |choice|
-    return solutions if solutions != []
     queens << choice
     generate_solutions(queens, solutions)
     queens.pop
   end
-  nil
+  solutions
 end
+
+def distinct_col(queens, new_queen)
+  queens.all? do |queen|
+    queen != new_queen
+  end
+end
+
+def distinct_main_diag(queens, new_queen)
+  queens.all? do |queen|
+    queen - queens.index(queen) != new_queen - queens.size
+  end
+end
+
+def distinct_counter_diag(queens, new_queen)
+  queens.all? do |queen|
+    queen + queens.index(queen) != new_queen + queens.size
+  end
+end
+
 
 def constrained_choices(queens)
   constrained_choices = []
   (0...SIZE).select do |choice|
-    queens.all? { |queen| queen != choice } &&
-    queens.all? { |queen| queen + queens.index(queen) != choice + queens.size   } &&
-    queens.all? { |queen| queen - queens.index(queen) != choice - queens.size  }
+    distinct_col(queens, choice) && distinct_main_diag(queens, choice) &&
+    distinct_counter_diag(queens, choice)
   end
 end
 
-puts Benchmark.realtime { generate_solutions() }
+p generate_solutions.size # 92
 
 # 8 by 8:
 # 0.0013069999404251575
