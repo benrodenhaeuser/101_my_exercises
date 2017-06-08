@@ -31,6 +31,7 @@ def open_up_diag?(board, row_idx, col_idx)
   up_diag_slots.all? { |row_idx, col_idx| board[row_idx][col_idx] == OPEN_SQUARE }
 end
 
+# tedious!
 def get_up_diag_slots(board, row_idx, col_idx)
   up_diag_slots = [[row_idx, col_idx]]
   stored_row_idx = row_idx
@@ -54,6 +55,7 @@ def get_up_diag_slots(board, row_idx, col_idx)
   up_diag_slots
 end
 
+# tedious! 
 def open_down_diag?(board, row_idx, col_idx)
   down_diag_slots = get_down_diag_slots(board, row_idx, col_idx)
   down_diag_slots.all? { |row_idx, col_idx| board[row_idx][col_idx] == OPEN_SQUARE }
@@ -136,12 +138,12 @@ end
 # [0, 1, 0, 0, 0, 0, 0, 0]
 # [0, 0, 0, 1, 0, 0, 0, 0]
 #
-# 1.9145939997397363 seconds
+# 1.9145939997397363 seconds (for one solution)
 
-# SOLUTION 2: different data structure
+# SOLUTION 2: use a simpler data structure
 
 def generate_solutions(queens = [], solutions = [])
-  solutions << queens.inspect if queens.size == SIZE
+  return solutions << queens.inspect if queens.size == SIZE
   constrained_choices(queens).each do |choice|
     queens << choice
     generate_solutions(queens, solutions)
@@ -150,34 +152,33 @@ def generate_solutions(queens = [], solutions = [])
   solutions
 end
 
-def distinct_col(queens, new_queen)
+def distinct_col?(queens, new_queen)
   queens.all? do |queen|
     queen != new_queen
   end
 end
 
-def distinct_main_diag(queens, new_queen)
+def distinct_main_diag?(queens, new_queen)
   queens.all? do |queen|
     queen - queens.index(queen) != new_queen - queens.size
   end
 end
 
-def distinct_counter_diag(queens, new_queen)
+def distinct_counter_diag?(queens, new_queen)
   queens.all? do |queen|
     queen + queens.index(queen) != new_queen + queens.size
   end
 end
 
-
 def constrained_choices(queens)
   constrained_choices = []
   (0...SIZE).select do |choice|
-    distinct_col(queens, choice) && distinct_main_diag(queens, choice) &&
-    distinct_counter_diag(queens, choice)
+    distinct_col?(queens, choice) && distinct_main_diag?(queens, choice) &&
+    distinct_counter_diag?(queens, choice)
   end
 end
 
-p generate_solutions.size # 92
+p generate_solutions.size # 92 => this is correct
 
 # 8 by 8:
 # 0.0013069999404251575
