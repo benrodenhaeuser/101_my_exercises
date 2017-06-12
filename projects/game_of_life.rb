@@ -1,4 +1,4 @@
-# GAME OF LIFE
+# modular GAME OF LIFE (played on a torus)
 
 # examples of seeds (source: https://bitstorm.org/gameoflife/)
 GLIDER = [
@@ -142,6 +142,8 @@ def get_next_grid(grid)
 
   next_grid
 end
+
+# plus_one is really a modular notion (torus)
 
 def neighbours(row_index, col_index, grid)
   row_above = grid[row_index - 1]

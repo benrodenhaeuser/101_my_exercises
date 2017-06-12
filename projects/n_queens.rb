@@ -2,16 +2,20 @@
 
 require 'benchmark'
 
-SIZE = 8
-
+SIZE = 12
 
 # SOLUTION 1
+# using a nested array representing the board as a data structure
+
+# approach:
+# we model the problem by considering a sequence of placement choices, i.e., each choice consists in placing a queen on the chess board.
+# rather than considering random such choices, we only try choices that are locally consistent in the sense that they we do not place a queen in a square where it would attack another queen.
 
 OPEN_SQUARE = 0
 QUEEN_SQUARE = 1
 
 def initialize_board
-  (0...SIZE).map do |row|
+  (0...SIZE).map do
     (0...SIZE).map do
       OPEN_SQUARE
     end
@@ -26,12 +30,16 @@ def open_column?(board, col_idx)
   board.all? { |row| row[col_idx] == OPEN_SQUARE }
 end
 
-def open_up_diag?(board, row_idx, col_idx)
+def open_upwards_diag?(board, row_idx, col_idx)
   up_diag_slots = get_up_diag_slots(board, row_idx, col_idx)
   up_diag_slots.all? { |row_idx, col_idx| board[row_idx][col_idx] == OPEN_SQUARE }
 end
 
-# tedious!
+def open_downward_diag?(board, row_idx, col_idx)
+  down_diag_slots = get_down_diag_slots(board, row_idx, col_idx)
+  down_diag_slots.all? { |row_idx, col_idx| board[row_idx][col_idx] == OPEN_SQUARE }
+end
+
 def get_up_diag_slots(board, row_idx, col_idx)
   up_diag_slots = [[row_idx, col_idx]]
   stored_row_idx = row_idx
@@ -53,12 +61,6 @@ def get_up_diag_slots(board, row_idx, col_idx)
   end
 
   up_diag_slots
-end
-
-# tedious! 
-def open_down_diag?(board, row_idx, col_idx)
-  down_diag_slots = get_down_diag_slots(board, row_idx, col_idx)
-  down_diag_slots.all? { |row_idx, col_idx| board[row_idx][col_idx] == OPEN_SQUARE }
 end
 
 def get_down_diag_slots(board, row_idx, col_idx)
@@ -85,7 +87,7 @@ def get_down_diag_slots(board, row_idx, col_idx)
   down_diag_slots
 end
 
-def open_slots(board)
+def available_slots(board)
   slots = []
   (0...SIZE).each do |row_idx|
     (0...SIZE).each do |col_idx|
@@ -95,31 +97,35 @@ def open_slots(board)
   slots
 end
 
-def constrained_choices(board)
-  open_slots(board).select do |row_idx, col_idx|
-    open_row?(board, row_idx) &&
-    open_column?(board, col_idx) &&
-    open_up_diag?(board, row_idx, col_idx) &&
-    open_down_diag?(board, row_idx, col_idx)
+def unattacked?(board, row_idx, col_idx)
+  open_row?(board, row_idx) &&
+  open_column?(board, col_idx) &&
+  open_upwards_diag?(board, row_idx, col_idx) &&
+  open_downwards_diag?(board, row_idx, col_idx)
+end
+
+def unattacked_slots(board)
+  available_slots(board).select do |row_idx, col_idx|
+    unattacked?(board, row_idx, col_idx)
   end
 end
 
-def make_move(board, row_idx, col_idx)
+def choose_slot(board, row_idx, col_idx)
   board[row_idx][col_idx] = QUEEN_SQUARE
 end
 
-def unmake_move(board, row_idx, col_idx)
+def unchoose_slot(board, row_idx, col_idx)
   board[row_idx][col_idx] = OPEN_SQUARE
 end
 
 def find_a_solution(board, number_of_choices = 0, solutions = [])
   solutions << board.inspect if number_of_choices == SIZE
-  constrained_choices(board).each do |row_idx, col_idx|
+  unattacked_slots(board).each do |row_idx, col_idx|
     return solutions if solutions != []
-    make_move(board, row_idx, col_idx)
+    choose_slot(board, row_idx, col_idx)
     number_of_choices += 1
     find_a_solution(board, number_of_choices, solutions)
-    unmake_move(board, row_idx, col_idx)
+    unchoose_slot(board, row_idx, col_idx)
     number_of_choices -= 1
   end
   nil
@@ -140,7 +146,14 @@ end
 #
 # 1.9145939997397363 seconds (for one solution)
 
-# SOLUTION 2: use a simpler data structure
+# SOLUTION 2:
+# use a flat array to just represent the queens
+
+# this changes the representation of the constraints:
+
+# row is open <=> automatically satisfied
+# col is open <=> "no element of array has value of col"
+# diagonals: combination of index and value
 
 def generate_solutions(queens = [], solutions = [])
   return solutions << queens.inspect if queens.size == SIZE
@@ -158,30 +171,85 @@ def distinct_col?(queens, new_queen)
   end
 end
 
-def distinct_main_diag?(queens, new_queen)
+def distinct_diff_diag?(queens, new_queen)
   queens.all? do |queen|
     queen - queens.index(queen) != new_queen - queens.size
   end
 end
 
-def distinct_counter_diag?(queens, new_queen)
+def distinct_sum_diag?(queens, new_queen)
   queens.all? do |queen|
     queen + queens.index(queen) != new_queen + queens.size
   end
 end
 
 def constrained_choices(queens)
-  constrained_choices = []
   (0...SIZE).select do |choice|
-    distinct_col?(queens, choice) && distinct_main_diag?(queens, choice) &&
-    distinct_counter_diag?(queens, choice)
+    distinct_col?(queens, choice) && distinct_diff_diag?(queens, choice) &&
+    distinct_sum_diag?(queens, choice)
   end
 end
 
-p generate_solutions.size # 92 => this is correct
+# puts Benchmark.realtime {generate_solutions.size } # 92 => this is correct
 
 # 8 by 8:
 # 0.0013069999404251575
 
 # 20 by 20:
 # 8.46816199971363
+
+# SOLUTION 3: refactor solution 2
+# use an attack? method to model the problem more clearly
+
+def attack?(queen1, queen2)
+  queen1 == queen2 || # same col
+  queens[queen1] + queen1 == queens[queen2] + queen2 # same sum diag
+  queens[queen1] - queen1 == queens[queen2] = queen2 # same diff diag
+end
+
+def good_choices(queens)
+  (0...SIZE).select do |choice|
+    queens.all? { |queen| !attack?(queen, choice) }
+  end
+end
+
+def solve(queens = [], solutions = [])
+  return solutions << queens.inspect if queens.size == SIZE
+  good_choices(queens).each do |choice|
+    queens << choice
+    generate_solutions(queens, solutions)
+    queens.pop
+  end
+  solutions
+end
+
+puts Benchmark.realtime { p solve.size } # 92 => this is correct
+# 8 by 8: 0.018118999898433685
+# 10 by 10: 0.37390700029209256
+# 11 by 11: 2.2709449999965727
+# 12 by 12: 12.973269999958575
+
+# SOLUTION 4:
+
+# exhaustive search: go through all permutations one by one, check in the end whether they lead to valid solutions.
+
+def solve(queens = [], solutions = [])
+  return solutions << queens.inspect if queens.size == SIZE && valid?(queens)
+  (0...SIZE).each do |choice|
+    queens << choice
+    generate_solutions(queens, solutions)
+    queens.pop
+  end
+  solutions
+end
+
+def valid?(queen)
+  solution.all? do |queen1|
+    solution.all? do |queen2|
+      !attack(queen1, queen2)
+    end
+  end
+end
+
+# puts Benchmark.realtime { p solve.size }
+# => this is a little slower than solution 3, but just a little 
