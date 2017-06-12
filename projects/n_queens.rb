@@ -2,7 +2,10 @@
 
 require 'benchmark'
 
-SIZE = 12
+SIZE = 8
+
+# ----------------------------------------------------------------------------
+
 
 # SOLUTION 1
 # using a nested array representing the board as a data structure
@@ -146,6 +149,8 @@ end
 #
 # 1.9145939997397363 seconds (for one solution)
 
+# ----------------------------------------------------------------------------
+
 # SOLUTION 2:
 # use a flat array to just represent the queens
 
@@ -190,66 +195,90 @@ def constrained_choices(queens)
   end
 end
 
-# puts Benchmark.realtime {generate_solutions.size } # 92 => this is correct
+puts Benchmark.realtime { p generate_solutions.size } # 0.020800999831408262
 
-# 8 by 8:
-# 0.0013069999404251575
 
-# 20 by 20:
-# 8.46816199971363
+# ----------------------------------------------------------------------------
 
 # SOLUTION 3: refactor solution 2
 # use an attack? method to model the problem more clearly
 
-def attack?(queen1, queen2)
-  queen1 == queen2 || # same col
-  queens[queen1] + queen1 == queens[queen2] + queen2 # same sum diag
-  queens[queen1] - queen1 == queens[queen2] = queen2 # same diff diag
-end
+# TODO: note that the index gives the row and the value at the index gives the column. our terminology does not properly reflect this, I think, i.e., sometimes the terminology suggests the indices are the queens, sometimes the terminology suggests the values are the queens. 
 
-def good_choices(queens)
-  (0...SIZE).select do |choice|
-    queens.all? { |queen| !attack?(queen, choice) }
+def attack?(queens, queen1, queen2)
+  unless queen1 == queen2 # same index, i.e., same queen
+    queens[queen1] == queens[queen2] || # same col
+    queens[queen1] + queen1 == queens[queen2] + queen2 || # same sum diag
+    queens[queen1] - queen1 == queens[queen2] - queen2 # same diff diag
   end
 end
 
-def solve(queens = [], solutions = [])
+def get_choices
+  choice_hash = {}
+  (0...SIZE).each do |choice|
+    choice_hash[choice] = true
+  end
+  choice_hash
+end
+
+def good_choice?(queens)
+  (0...queens.size).all? { |queen| !attack?(queens, queen, queens.size - 1) }
+end
+
+def solve(queens = [], choices = get_choices, solutions = [])
   return solutions << queens.inspect if queens.size == SIZE
-  good_choices(queens).each do |choice|
+  choices.select { |choice, val| val == true }.each do |choice, _|
     queens << choice
-    generate_solutions(queens, solutions)
+    choices[choice] = false
+    solve(queens, choices, solutions) if good_choice?(queens)
     queens.pop
+    choices[choice] = true
   end
   solutions
 end
 
-puts Benchmark.realtime { p solve.size } # 92 => this is correct
-# 8 by 8: 0.018118999898433685
-# 10 by 10: 0.37390700029209256
-# 11 by 11: 2.2709449999965727
-# 12 by 12: 12.973269999958575
+# puts Benchmark.realtime { p solve.size } # 0.010900000110268593 for 8x8
+
+
+# ----------------------------------------------------------------------------
 
 # SOLUTION 4:
+# test diagonals only in the end
 
-# exhaustive search: go through all permutations one by one, check in the end whether they lead to valid solutions.
+def attack?(queens, queen1, queen2)
+  unless queen1 == queen2 # same index, i.e., same queen
+    queens[queen1] == queens[queen2] || # same col
+    queens[queen1] + queen1 == queens[queen2] + queen2 || # same sum diag
+    queens[queen1] - queen1 == queens[queen2] - queen2 # same diff diag
+  end
+end
 
-def solve(queens = [], solutions = [])
+def solve(queens = [], choices = get_choices, solutions = [])
   return solutions << queens.inspect if queens.size == SIZE && valid?(queens)
-  (0...SIZE).each do |choice|
+  choices.select { |choice, val| val == true }.each do |choice, _|
     queens << choice
-    generate_solutions(queens, solutions)
+    choices[choice] = false
+    solve(queens, choices, solutions)
     queens.pop
+    choices[choice] = true
   end
   solutions
 end
 
-def valid?(queen)
-  solution.all? do |queen1|
-    solution.all? do |queen2|
-      !attack(queen1, queen2)
+def get_choices
+  choice_hash = {}
+  (0...SIZE).each do |choice|
+    choice_hash[choice] = true
+  end
+  choice_hash
+end
+
+def valid?(queens)
+  (0...SIZE).all? do |queen1|
+    (0...SIZE).all? do |queen2|
+      !attack?(queens, queen1, queen2)
     end
   end
 end
 
-# puts Benchmark.realtime { p solve.size }
-# => this is a little slower than solution 3, but just a little 
+# puts Benchmark.realtime { p solve.size } # 0.23814400006085634 for 8x8
