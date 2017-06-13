@@ -5,9 +5,9 @@ require 'benchmark'
 SIZE = 10
 
 # ----------------------------------------------------------------------------
-
-
 # SOLUTION 1
+# ----------------------------------------------------------------------------
+
 # using a nested array representing the board as a data structure
 
 # approach:
@@ -135,8 +135,9 @@ def solve1(board = initialize_board, number_of_choices = 0, solutions = [])
 end
 
 # ----------------------------------------------------------------------------
-
 # SOLUTION 2:
+# ----------------------------------------------------------------------------
+
 # use a flat array to represent the queens
 
 # a queen's row is given by the array index
@@ -185,8 +186,9 @@ end
 
 
 # ----------------------------------------------------------------------------
-
 # SOLUTION 3: refactor solution 2
+# ----------------------------------------------------------------------------
+
 # use an attack? method to model the problem more clearly
 
 # TODO: note that the index gives the row and the value at the index gives the column. our terminology does not properly reflect this, I think, i.e., sometimes the terminology suggests the indices are the queens, sometimes the terminology suggests the values are the queens.
@@ -223,11 +225,10 @@ def solve3(queens = [], choices = get_choices, solutions = [])
   solutions
 end
 
-
-
+# ----------------------------------------------------------------------------
+# SOLUTION 4:
 # ----------------------------------------------------------------------------
 
-# SOLUTION 4:
 # test diagonals only in the end
 
 def attack?(queens, queen1, queen2)
@@ -266,12 +267,13 @@ def valid?(queens)
   end
 end
 
+# ----------------------------------------------------------------------------
+
 # puts Benchmark.realtime { p solve1.size }
 # ^ 1.901837000157684 for a single solution!
 # puts Benchmark.realtime { p solve2.size } # 0.018800999831408262
 puts Benchmark.realtime { p solve3.size } # 0.010900000110268593 for 8x8
 # puts Benchmark.realtime { p solve4.size } # 0.23814400006085634 for 8x8
-
 
 # presumably, a lot of effort here goes into the attack? method.
 # dijkstra discusses a way to memoize covered fields, something I had been thinking about initially, but couldn't find a good method to do it.

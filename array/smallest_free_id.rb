@@ -66,10 +66,10 @@ end
 # array = (0..100000).to_a
 # p smallest_free_id3(array) # 100001 (takes forever)
 
-# deleting a value from an array without knowing its index upfront is potentially costly. here, finding the element to delete in the gaps array should not be so difficult though – it's always the first one. however, we have to shift the remaining array elements one place to the left, and we are doing this shifting a lot of times, so that makes the algorithm costly.
+# what is costly here is shifting elements of the gaps array after deleting an element, there are literally millions of shifts we have to perform!
 
 # ----------------------------------------------------------------------------
-# solution 4: flag array
+# solution 4: array of flags
 # ----------------------------------------------------------------------------
 
 # very similar to solution 3 in spirit, but *a lot* faster.
@@ -92,7 +92,7 @@ end
 # array = (0..100000).to_a
 # p smallest_free_id4(array) # 100001 (very fast)
 
-# here, instead of shifting array elements, we are merely accessing one of them and changing its value. so that's just n steps in total.
+# here, instead of shifting elements of the gap array, we merely access one array element by index and change it. so that's just n steps in total.
 
 # ----------------------------------------------------------------------------
 # solution 4: divide and conquer
