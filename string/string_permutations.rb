@@ -1,5 +1,7 @@
 # given a string, find all permutations of the string
 
+require 'benchmark'
+
 # solution 1
 
 def all_permutations(string)
@@ -145,5 +147,5 @@ end
 # puts
 # p permutations('abcdefghi') # length = 9, 362880 results, ~7-9 seconds to return
 
-permutations('123456789')
-puts 'done'
+puts Benchmark.realtime { permutations('0123456789') }
+# 33.3688959996216 => intense!

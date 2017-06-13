@@ -2,7 +2,7 @@
 
 require 'benchmark'
 
-SIZE = 8
+SIZE = 10
 
 # ----------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ def open_upwards_diag?(board, row_idx, col_idx)
   up_diag_slots.all? { |row_idx, col_idx| board[row_idx][col_idx] == OPEN_SQUARE }
 end
 
-def open_downward_diag?(board, row_idx, col_idx)
+def open_downwards_diag?(board, row_idx, col_idx)
   down_diag_slots = get_down_diag_slots(board, row_idx, col_idx)
   down_diag_slots.all? { |row_idx, col_idx| board[row_idx][col_idx] == OPEN_SQUARE }
 end
@@ -121,50 +121,38 @@ def unchoose_slot(board, row_idx, col_idx)
   board[row_idx][col_idx] = OPEN_SQUARE
 end
 
-def find_a_solution(board, number_of_choices = 0, solutions = [])
-  solutions << board.inspect if number_of_choices == SIZE
+def solve1(board = initialize_board, number_of_choices = 0, solutions = [])
+  return solutions << board.inspect if number_of_choices == SIZE
   unattacked_slots(board).each do |row_idx, col_idx|
     return solutions if solutions != []
     choose_slot(board, row_idx, col_idx)
     number_of_choices += 1
-    find_a_solution(board, number_of_choices, solutions)
+    solve1(board, number_of_choices, solutions)
     unchoose_slot(board, row_idx, col_idx)
     number_of_choices -= 1
   end
-  nil
+  solutions
 end
-
-# puts Benchmark.realtime { find_a_solution(initialize_board)[0] }
-
-# 8 by 8:
-#
-# [1, 0, 0, 0, 0, 0, 0, 0]
-# [0, 0, 0, 0, 1, 0, 0, 0]
-# [0, 0, 0, 0, 0, 0, 0, 1]
-# [0, 0, 0, 0, 0, 1, 0, 0]
-# [0, 0, 1, 0, 0, 0, 0, 0]
-# [0, 0, 0, 0, 0, 0, 1, 0]
-# [0, 1, 0, 0, 0, 0, 0, 0]
-# [0, 0, 0, 1, 0, 0, 0, 0]
-#
-# 1.9145939997397363 seconds (for one solution)
 
 # ----------------------------------------------------------------------------
 
 # SOLUTION 2:
-# use a flat array to just represent the queens
+# use a flat array to represent the queens
+
+# a queen's row is given by the array index
+# a queen's column is given by the value at the array index
 
 # this changes the representation of the constraints:
 
 # row is open <=> automatically satisfied
 # col is open <=> "no element of array has value of col"
-# diagonals: combination of index and value
+# diagonals: combination of index and value (sum diagonal/diff diagonal)
 
-def generate_solutions(queens = [], solutions = [])
+def solve2(queens = [], solutions = [])
   return solutions << queens.inspect if queens.size == SIZE
   constrained_choices(queens).each do |choice|
     queens << choice
-    generate_solutions(queens, solutions)
+    solve2(queens, solutions)
     queens.pop
   end
   solutions
@@ -195,15 +183,13 @@ def constrained_choices(queens)
   end
 end
 
-puts Benchmark.realtime { p generate_solutions.size } # 0.020800999831408262
-
 
 # ----------------------------------------------------------------------------
 
 # SOLUTION 3: refactor solution 2
 # use an attack? method to model the problem more clearly
 
-# TODO: note that the index gives the row and the value at the index gives the column. our terminology does not properly reflect this, I think, i.e., sometimes the terminology suggests the indices are the queens, sometimes the terminology suggests the values are the queens. 
+# TODO: note that the index gives the row and the value at the index gives the column. our terminology does not properly reflect this, I think, i.e., sometimes the terminology suggests the indices are the queens, sometimes the terminology suggests the values are the queens.
 
 def attack?(queens, queen1, queen2)
   unless queen1 == queen2 # same index, i.e., same queen
@@ -225,19 +211,18 @@ def good_choice?(queens)
   (0...queens.size).all? { |queen| !attack?(queens, queen, queens.size - 1) }
 end
 
-def solve(queens = [], choices = get_choices, solutions = [])
+def solve3(queens = [], choices = get_choices, solutions = [])
   return solutions << queens.inspect if queens.size == SIZE
   choices.select { |choice, val| val == true }.each do |choice, _|
     queens << choice
     choices[choice] = false
-    solve(queens, choices, solutions) if good_choice?(queens)
+    solve3(queens, choices, solutions) if good_choice?(queens)
     queens.pop
     choices[choice] = true
   end
   solutions
 end
 
-# puts Benchmark.realtime { p solve.size } # 0.010900000110268593 for 8x8
 
 
 # ----------------------------------------------------------------------------
@@ -253,12 +238,12 @@ def attack?(queens, queen1, queen2)
   end
 end
 
-def solve(queens = [], choices = get_choices, solutions = [])
+def solve4(queens = [], choices = get_choices, solutions = [])
   return solutions << queens.inspect if queens.size == SIZE && valid?(queens)
   choices.select { |choice, val| val == true }.each do |choice, _|
     queens << choice
     choices[choice] = false
-    solve(queens, choices, solutions)
+    solve4(queens, choices, solutions)
     queens.pop
     choices[choice] = true
   end
@@ -281,4 +266,12 @@ def valid?(queens)
   end
 end
 
-# puts Benchmark.realtime { p solve.size } # 0.23814400006085634 for 8x8
+# puts Benchmark.realtime { p solve1.size }
+# ^ 1.901837000157684 for a single solution!
+# puts Benchmark.realtime { p solve2.size } # 0.018800999831408262
+puts Benchmark.realtime { p solve3.size } # 0.010900000110268593 for 8x8
+# puts Benchmark.realtime { p solve4.size } # 0.23814400006085634 for 8x8
+
+
+# presumably, a lot of effort here goes into the attack? method.
+# dijkstra discusses a way to memoize covered fields, something I had been thinking about initially, but couldn't find a good method to do it.
