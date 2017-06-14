@@ -15,7 +15,7 @@ SIZE = 8
 #     the board are already covered by some queen.
 #   - a solution is obtained once SIZE queens are placed on the board.
 
-# very complicated!
+# very complicated solution!
 
 OPEN_SQUARE = 0
 QUEEN_SQUARE = 1
@@ -115,7 +115,7 @@ end
 # SOLUTION 2:
 # ----------------------------------------------------------------------------
 
-# solution 1 is very complex. this seems to be due to the choice of data structure.
+# solution 1 is very complex. this seems to be due to the choice of data structure for representing the problem domain.
 
 # here, we explore another option: represent the problem by means of a flat array recording the positioning of the queens. every queen corresponds to one array element.
 
@@ -204,6 +204,29 @@ def viable_choices3(queens)
 end
 
 # ----------------------------------------------------------------------------
+# SOLUTION 3a: a small variation on solution 3
+# ----------------------------------------------------------------------------
+
+# we can also push the conditional *inside* the `each` loop:
+
+def solve3a(queens = [], solutions = [])
+  viable_choices3(queens).each do |new_queen|
+    queens << new_queen
+    if queens.size == SIZE
+      solutions << queens.inspect # we are done
+    else
+      solve3a(queens, solutions) # keep going
+    end
+    queens.pop
+  end
+  solutions
+end
+
+# if there are no viable choices (i.e., we are stuck with less than eight queens), then the call will be rather trivial, it will simply return `solutions` as it was before the call.
+
+# the advantage of this approach is that we avoid one redundant layer of method calls. while this won't make a lot of difference, this seems preferable.
+
+# ----------------------------------------------------------------------------
 # SOLUTION 4: memoize covered squares
 # ----------------------------------------------------------------------------
 
@@ -211,34 +234,32 @@ end
 # covered columns and diagonals in a hash
 
 def solve4(queens = [], covered = init_covered, solutions = [])
-  if queens.size == SIZE
-    solutions << queens.inspect
-  else
-    # p viable_choices(covered, queens.size)
-    # p covered
-    viable_choices(covered, queens.size).each do |new_queen|
-      add_to_covered(covered, queens.size, new_queen)
-      queens << new_queen
+  viable_choices(covered, queens.size).each do |new_queen|
+    add_to_covered(covered, queens.size, new_queen)
+    queens << new_queen
+    if queens.size == SIZE
+      solutions << queens.inspect
+    else
       solve4(queens, covered, solutions)
-      queens.pop
-      remove_from_covered(covered, queens.size, new_queen)
     end
+    queens.pop
+    remove_from_covered(covered, queens.size, new_queen)
   end
   solutions
 end
 
-def viable_choices(covered, queen_row)
-  (0...SIZE).select do |queen_col|
-    covered[:cols][queen_col] == 0 &&
-    covered[:sum_diags][queen_row + queen_col] == 0 &&
-    covered[:diff_diags][queen_row - queen_col] == 0
+def viable_choices(covered, row)
+  (0...SIZE).select do |col|
+    !covered[:cols][col] &&
+    !covered[:sum_diags][row + col] &&
+    !covered[:diff_diags][row - col]
   end
 end
 
 def init_covered
-  cols = (0..SIZE - 1).map { |col| [col, 0] }.to_h
-  sum_diags = (0..2*(SIZE - 1)).map { |diag| [diag, 0] }.to_h
-  diff_diags = (-(SIZE - 1)..SIZE - 1).map { |diag| [diag, 0] }.to_h
+  cols = (0..SIZE - 1).map { |col| [col, false] }.to_h
+  sum_diags = (0..2*(SIZE - 1)).map { |diag| [diag, false] }.to_h
+  diff_diags = (-(SIZE - 1)..SIZE - 1).map { |diag| [diag, false] }.to_h
 
   {
     cols: cols,
@@ -247,44 +268,34 @@ def init_covered
   }
 end
 
-def add_to_covered(covered, queen_row, queen_col)
-  covered[:cols][queen_col] += 1
-  covered[:sum_diags][queen_row + queen_col] += 1
-  covered[:diff_diags][queen_row - queen_col] += 1
+def add_to_covered(covered, row, col)
+  covered[:cols][col] = true
+  covered[:sum_diags][row + col] = true
+  covered[:diff_diags][row - col] = true
 end
 
-def remove_from_covered(covered, queen_row, queen_col)
-  covered[:cols][queen_col] -= 1
-  covered[:sum_diags][queen_row + queen_col] -= 1
-  covered[:diff_diags][queen_row - queen_col] -= 1
+def remove_from_covered(covered, row, col)
+  covered[:cols][col] = false
+  covered[:sum_diags][row + col] = false
+  covered[:diff_diags][row - col] = false
 end
 
 # ----------------------------------------------------------------------------
-# FURTHER OPTIONS:
+# BENCHMARKS:
 # ----------------------------------------------------------------------------
 
-# more strategies:
-#   - symmetry breaking
-#   - iterative repair (start with something, massage it to a solution)
-#   - genetic programming
+# NOTE:
+# - the solve1 method from solution 1 is too slow to be interesting.
+# - the solve3a method is more or less the same as solve3, so we omit it here.
 
-# find a single solution in linear time
-
-# ----------------------------------------------------------------------------
-# TESTS:
-# ----------------------------------------------------------------------------
-
-
-# 8x8 board:
-puts Benchmark.realtime { p solve1.size } # 0.01819799980148673
-# puts Benchmark.realtime { p solve2.size } # 0.01819799980148673
-# puts Benchmark.realtime { p solve3.size } # 0.016749999951571226
-# puts Benchmark.realtime { p solve4.size } # 0.009391000028699636
+# puts Benchmark.realtime { p solve2.size }
+# puts Benchmark.realtime { p solve3.size }
+# puts Benchmark.realtime { p solve4.size }
 
 # 8x8 board:
 # solve2: 0.01819799980148673
 # solve3: 0.016749999951571226
-# solve4: 0.009391000028699636
+# solve4: 0.005625000223517418
 
 # 10x10 board:
 # solve2: 0.39056000020354986
@@ -301,5 +312,19 @@ puts Benchmark.realtime { p solve1.size } # 0.01819799980148673
 # solve3: 480.1802369998768
 # solve4:  94.39550500037149
 
-# so memoization has a quite dramatic effect on performance.
-# solution 3 improves on solution 2 mainly because the number of times we walk through the queens array is tripled, which is inefficient.
+# Observations:
+#
+# - Solution 3 improves on solution 2 mainly in cutting down the number of
+#   times we walk through the array of queens placed on the board so far (I
+#   think).
+# - Memoization has a quite dramatic effect on performance as the input size
+#   grows.
+
+# ----------------------------------------------------------------------------
+# FURTHER EXPLORATION:
+# ----------------------------------------------------------------------------
+
+#   - additional optimization: symmetry breaking
+#   - different algorithm: "iterative repair"
+#   - a different task: find a *single* solution in linear time
+#   - solve the problem on a modular chess board (i.e., a torus/donut)
