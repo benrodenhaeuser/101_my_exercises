@@ -1,3 +1,5 @@
+# search for integer `number` in sorted array `order`
+
 def binary_search(number, order)
   lower_bound = 0
   upper_bound = order.size - 1
