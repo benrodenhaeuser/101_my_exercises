@@ -46,6 +46,54 @@ PRODUCT_TABLE =
       }
   }
 
+# addition
+
+def add(x, y, base = '10')
+  result = []
+
+  x_digits = digits(x)
+  y_digits = digits(y)
+  expand_to_same_length!(x_digits, y_digits)
+  carry = '0'
+
+  while x_digits != []
+    current_x_digit = x_digits.pop
+    current_y_digit = y_digits.pop
+
+    current_x_digit_plus_carry = SUM_TABLE[base][carry][current_x_digit]
+    current_sum =
+      SUM_TABLE[base][current_x_digit_plus_carry][current_y_digit]
+
+    if current_sum.size == 1
+      result.unshift(current_sum)
+      carry = '0'
+    else
+      result.unshift(digits(current_sum).last)
+      carry = digits(current_sum).first
+    end
+  end
+
+  result.unshift(carry) unless carry == '0'
+  result.join
+end
+
+def digits(string)
+ string.chars
+end
+
+def expand_to_same_length!(digits1, digits2)
+  target_length = [digits1.size, digits2.size].max
+  expand_to!(target_length, digits1)
+  expand_to!(target_length, digits2)
+end
+
+def expand_to!(length, digits)
+  if digits.size < length
+    digits.unshift('0')
+    expand_to!(length, digits)
+  end
+end
+
 # multiplication
 
 def multiply(x, y, base = '10')
@@ -97,54 +145,6 @@ def sum_up(list_of_numbers, base)
   end
 
   result
-end
-
-# addition
-
-def add(x, y, base = '10')
-  result = []
-
-  x_digits = digits(x)
-  y_digits = digits(y)
-  expand_to_same_length!(x_digits, y_digits)
-  carry = '0'
-
-  while x_digits != []
-    current_x_digit = x_digits.pop
-    current_y_digit = y_digits.pop
-
-    current_x_digit_plus_carry = SUM_TABLE[base][carry][current_x_digit]
-    current_sum =
-      SUM_TABLE[base][current_x_digit_plus_carry][current_y_digit]
-
-    if current_sum.size == 1
-      result.unshift(current_sum)
-      carry = '0'
-    else
-      result.unshift(digits(current_sum).last)
-      carry = digits(current_sum).first
-    end
-  end
-
-  result.unshift(carry) unless carry == '0'
-  result.join
-end
-
-def digits(string)
- string.chars
-end
-
-def expand_to_same_length!(digits1, digits2)
-  target_length = [digits1.size, digits2.size].max
-  expand_to!(target_length, digits1)
-  expand_to!(target_length, digits2)
-end
-
-def expand_to!(length, digits)
-  if digits.size < length
-    digits.unshift('0')
-    expand_to!(length, digits)
-  end
 end
 
 # tests
