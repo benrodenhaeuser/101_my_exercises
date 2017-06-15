@@ -84,7 +84,7 @@ end
 # solution 6: reduce and conquer
 # ----------------------------------------------------------------------------
 
-# idea: halve the problem by partitioning the list and checking the size of the left half.
+# idea: halve the problem by partitioning the list and checking the size of the left half to determine where to continue the search for the gap
 
 def smallest_free_id6(array)
   if array.max == array.size - 1
@@ -200,15 +200,15 @@ end
 # benchmarks
 # ----------------------------------------------------------------------------
 
-# array = (0..100000).to_a
-# array.delete(1001)
+array = (0..100000).to_a
+array.delete(1001)
 
 # puts Benchmark.realtime { smallest_free_id1(array) } # brute force (slow)
-# puts Benchmark.realtime { p smallest_free_id2(array) } # sort and check
+puts Benchmark.realtime { p smallest_free_id2(array) } # sort and check
 # puts Benchmark.realtime { smallest_free_id3(array) } # external array (slow)
-# puts Benchmark.realtime { p smallest_free_id4(array) } # array of flags
+puts Benchmark.realtime { p smallest_free_id4(array) } # array of flags
 # puts Benchmark.realtime { p smallest_free_id5(array) } # divide and conquer
-# puts Benchmark.realtime { p smallest_free_id6(array) } # reduce and conquer
+puts Benchmark.realtime { p smallest_free_id6(array) } # reduce and conquer
 
 # array = [18, 4, 8, 9, 16, 1, 14, 7, 19, 3, 0, 5, 2, 11, 6]
 
@@ -227,3 +227,14 @@ end
 # array of flags     0.024766999762505293
 # divide and conquer 0.20936099998652935
 # reduce and conquer 0.000294999685138464
+
+# array = (0..100000).to_a
+# array.delete(1001)
+
+# sort and check:     0.002177000045776367
+# array of flags:     0.016278999857604504
+# reduce and conquer: 0.018616999965161085
+
+# observations:
+# - it's hard to beat the built-in search!
+# - reduce and conquer 

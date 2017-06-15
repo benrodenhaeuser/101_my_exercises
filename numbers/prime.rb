@@ -1,4 +1,4 @@
-# write a method to determine whether its argument is a prime
+# write a method to determine whether a number is a prime
 
 =begin
 IO:
