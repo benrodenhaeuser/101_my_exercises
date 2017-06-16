@@ -2,7 +2,9 @@
 
 require 'benchmark'
 
+# ---------------------------------------------------------------------------
 # solution 1
+# ---------------------------------------------------------------------------
 
 def all_permutations(string)
   produce_all_permutations(string).sort
@@ -24,21 +26,9 @@ def produce_all_permutations(string)
   end
 end
 
-# p all_permutations('')
-# puts
-# p all_permutations('a')
-# puts
-# p all_permutations('ab')
-# puts
-# p all_permutations('abc')
-# puts
-# p all_permutations('abcd')
-# puts
-# p all_permutations('abcde')
-#
-# 3.times { puts }
-
+# ---------------------------------------------------------------------------
 # solution 2
+# ---------------------------------------------------------------------------
 
 def generate_permutations(stock, chosen, permus)
   if stock.empty?
@@ -61,28 +51,11 @@ def permutations(string)
   permus
 end
 
-# p permutations('')
-# puts
-# p permutations('a')
-# puts
-# p permutations('ab')
-# puts
-# p permutations('abc')
-# puts
-# p permutations('abcd')
-# puts
-# p permutations('abcde')
-# puts
-# p permutations('abcdefghi')
-# ^ this one is still reasonably fast, just takes a long time to print
-
-# 5.times { puts }
-
-# NOTES
-
-# the algorithm above is inefficient if our input string contains duplicate letters. on top of this, we actually produce an output array with duplicates!
-
+# ---------------------------------------------------------------------------
 # solution 3: avoid making duplicates of the same permutation
+# ---------------------------------------------------------------------------
+
+# solution 1 and 2 do produce redundant permutations if our input string contains duplicate letters. one solution to this would be to remove redundancies after generating them. a better solution is to not generate redundant permutations in the first place.
 
 # approach
 
@@ -93,43 +66,45 @@ end
 # - the base case of the recursion is now reached once all letters have frequencey 0 (this is when we have exhausted our stock).
 # - also, make the method return the permutations rather than merely store them.
 
-def frequency_count(array_of_char)
-  frequencies = Hash.new { |hash, key| hash[key] = 0 }
-  array_of_char.each { |letter| frequencies[letter] += 1 }
-  frequencies
+def get_stock(array_of_char)
+  stock = Hash.new { |hash, key| hash[key] = 0 }
+  array_of_char.each { |letter| stock[letter] += 1 }
+  stock
 end
 
-def choose(choice, frequencies, perm)
-  frequencies[choice] -= 1
-  perm << choice
+def choose(character, stock, permutation)
+  stock[character] -= 1
+  permutation << character
   nil
 end
 
-def unchoose(choice, frequencies, perm)
-  frequencies[choice] += 1
-  perm.slice!(-1)
+def unchoose(character, stock, permutation)
+  stock[character] += 1
+  permutation.slice!(-1)
   nil
 end
 
-def compute_permutations(frequencies, perm = '', permutations = [])
-  if frequencies.values.all? { |count| count == 0 }
-    permutations << perm.dup
+def compute_permutations(stock, permutation = '', permutations = [])
+  if stock.values.all? { |count| count == 0 }
+    permutations << permutation.dup
   else
-    frequencies.each_key do |choice|
-      next if frequencies[choice] == 0
-      choose(choice, frequencies, perm)
-      compute_permutations(frequencies, perm, permutations)
-      unchoose(choice, frequencies, perm)
+    stock.each_key do |character|
+      next if stock[character] == 0
+      choose(character, stock, permutation)
+      compute_permutations(stock, permutation, permutations)
+      unchoose(character, stock, permutation)
     end
   end
   permutations
 end
 
 def permutations(string)
-  compute_permutations(frequency_count(string.chars.sort))
+  compute_permutations(get_stock(string.chars.sort))
 end
 
+# ---------------------------------------------------------------------------
 # test
+# ---------------------------------------------------------------------------
 
 # p permutations('')
 # puts
