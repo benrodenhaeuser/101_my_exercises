@@ -1,4 +1,4 @@
-# check if given array contains a duplicate value
+# test if given array contains a duplicate value
 
 def has_duplicate?(array)
   already_seen = Hash.new { |hash, key| hash[key] = false }
