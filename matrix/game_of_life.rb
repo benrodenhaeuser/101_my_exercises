@@ -1,6 +1,13 @@
-# modular GAME OF LIFE (played on a torus)
+# modular GAME OF LIFE
+# (played on a torus)
 
-# examples of seeds (source: https://bitstorm.org/gameoflife/)
+GRID_HEIGHT = 15
+GRID_WIDTH = 45
+LIFESPAN = 40 # number of ticks before game finishes
+DISPLAY_ALIVE = "\u25FD".encode('utf-8') # \u25FD
+DISPLAY_DEAD = "\u25FE".encode('utf-8')
+
+# seeds (source: https://bitstorm.org/gameoflife/)
 GLIDER = [
   [false, true, false],
   [false, false, true],
@@ -29,13 +36,6 @@ EXPLODER = [
   [true, false, false, false, true],
   [true, false, true, false, true]
 ]
-
-# grid configuration
-GRID_HEIGHT = 15
-GRID_WIDTH = 45
-LIFESPAN = 40 # number of ticks before game finishes
-DISPLAY_ALIVE = "\u25FD".encode('utf-8') # \u25FD
-DISPLAY_DEAD = "\u25FE".encode('utf-8')
 
 # game of life
 def start(seed, grid_height, grid_width, lifespan = nil)
@@ -143,27 +143,17 @@ def get_next_grid(grid)
   next_grid
 end
 
-# plus_one is really a modular notion (torus)
-
 def neighbours(row_index, col_index, grid)
   row_above = grid[row_index - 1]
   current_row = grid[row_index]
-  row_below = grid[plus_one(row_index, grid.size)]
+  row_below = grid[(row_index + 1) % grid.size]
 
   to_the_left = col_index - 1
-  to_the_right = plus_one(col_index, grid.first.size)
+  to_the_right = (col_index + 1) % grid.first.size
 
   [row_above[to_the_left], row_above[col_index], row_above[to_the_right],
    current_row[to_the_left], current_row[to_the_right],
    row_below[to_the_left], row_below[col_index], row_below[to_the_right]]
-end
-
-def plus_one(index, dimension)
-  if index == dimension - 1
-    0
-  else
-    index + 1
-  end
 end
 
 def count_alive(cells)
@@ -183,4 +173,4 @@ def overwrite_values(grid, next_grid)
 end
 
 #
-start(EXPLODER, GRID_HEIGHT, GRID_WIDTH, LIFESPAN)
+start(GLIDER, GRID_HEIGHT, GRID_WIDTH, LIFESPAN)
