@@ -99,27 +99,27 @@ def frequency_count(array_of_char)
   frequencies
 end
 
-def go_forward(frequencies, partial, choice)
+def choose(choice, frequencies, perm)
   frequencies[choice] -= 1
-  partial << choice
+  perm << choice
   nil
 end
 
-def trace_back(frequencies, partial, choice)
+def unchoose(choice, frequencies, perm)
   frequencies[choice] += 1
-  partial.slice!(-1)
+  perm.slice!(-1)
   nil
 end
 
-def compute_permutations(frequencies, partial = '', permutations = [])
+def compute_permutations(frequencies, perm = '', permutations = [])
   if frequencies.values.all? { |count| count == 0 }
-    permutations << partial.dup
+    permutations << perm.dup
   else
     frequencies.each_key do |choice|
       next if frequencies[choice] == 0
-      go_forward(frequencies, partial, choice)
-      compute_permutations(frequencies, partial, permutations)
-      trace_back(frequencies, partial, choice)
+      choose(choice, frequencies, perm)
+      compute_permutations(frequencies, perm, permutations)
+      unchoose(choice, frequencies, perm)
     end
   end
   permutations
@@ -147,5 +147,5 @@ end
 # puts
 # p permutations('abcdefghi') # length = 9, 362880 results, ~7-9 seconds to return
 
-puts Benchmark.realtime { permutations('0123456789') }
+# puts Benchmark.realtime { permutations('0123456789') }
 # 33.3688959996216 => intense!
