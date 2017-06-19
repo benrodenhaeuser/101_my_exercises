@@ -2,7 +2,6 @@
 
 =begin
 
-
 algorithm (rough):
   - for every valid string index: produce the prefixes of maximal substring of string starting at the index
 
