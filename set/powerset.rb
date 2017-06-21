@@ -3,36 +3,16 @@
 require 'set'
 
 # ---------------------------------------------------------------------------
-# k-combinations of an array
+# powerset
 # ---------------------------------------------------------------------------
 
-# assume that k > 0
+# this implementation produces the powerset in the usual order: go from small subsets to big ones, order subsets of the same size lexicographically.
 
-def combine_array(array, k)
-  return [[]] if k == 0
-
-  if k == 1
-    array.map { |elem| [elem] }
-  elsif array.size >= k
-    combine_array(array[1..-1], k - 1).map { |combo| [array[0]] + combo } +
-    combine_array(array[1..-1], k)
-  else
-    []
-  end
-end
-
-# this produces the k-combinations in lexicographic order.
-
-# ---------------------------------------------------------------------------
-# k-combinations of a set
-# ---------------------------------------------------------------------------
-
-# since combinations are distinguished by the fact that order does not matter, sets seem an appropriate choice of data structure.
 
 def combine_set(set, k)
-  return [[].to_set].to_set if k == 0
-
-  if k == 1
+  if k == 0
+    [[].to_set].to_set
+  elsif k == 1
     set.map { |elem| [elem].to_set }.to_set
   elsif set.size >= k
     elem = set.to_a.first
@@ -43,29 +23,34 @@ def combine_set(set, k)
   end
 end
 
-# ---------------------------------------------------------------------------
-# generate all subarrays of array
-# ---------------------------------------------------------------------------
-
-# Observation: Since we now have a procedure that computes all k-combinations of a given array (or set), we can also compute *all* subarrays of a given array (or the powerset of a given set).
-
-def subarrays(array)
-  subarrays = []
-  (0..array.size).each { |k| subarrays += combine_array(array, k) }
-  subarrays
-end
-
-# ---------------------------------------------------------------------------
-# generate the powerset
-# ---------------------------------------------------------------------------
-
 def powerset(set)
   powerset = [].to_set
   (0..set.size).each { |k| powerset += combine_set(set, k) }
   powerset
 end
 
-# this will produce the powerset in its "natural" ordering (i.e., go from small to big and order subsets of the same size lexicographically).
+# ---------------------------------------------------------------------------
+# subarrays of an array
+# ---------------------------------------------------------------------------
+
+def combine_array(array, k)
+  if k == 0
+    [[]]
+  elsif k == 1
+    array.map { |elem| [elem] }
+  elsif array.size >= k
+    combine_array(array[1..-1], k - 1).map { |combo| [array[0]] + combo } +
+    combine_array(array[1..-1], k)
+  else
+    []
+  end
+end
+
+def subarrays(array)
+  subarrays = []
+  (0..array.size).each { |k| subarrays += combine_array(array, k) }
+  subarrays
+end
 
 # ---------------------------------------------------------------------------
 # tests
@@ -120,6 +105,7 @@ p combine_set([1, 2, 3, 4, 5].to_set, 5)
 p subarrays([1, 2, 3])
 # => [[], [1], [2], [3], [1, 2], [1, 3], [2, 3], [1, 2, 3]]
 
+# -----
 
 # powerset
 
