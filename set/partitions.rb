@@ -31,7 +31,7 @@ generate_partitions of S:
 =end
 
 # ---------------------------------------------------------------------------
-# solution 1: in terms of powerset
+# solution 1: based on powerset
 # ---------------------------------------------------------------------------
 
 # we make use of an auxiliary method non_empty_proper_subsets, which gives the powerset minus the top and bottom elements. this auxiliary method is defined in terms of another auxiliary method which gives the k-combinations of a set, i.e., the subsets of cardinality k.
@@ -72,7 +72,40 @@ def combinations(set, k)
   end
 end
 
-# presumably, this solution computes the same partitions many times over.
+# this solution computes many partitions several times.
+# consider partitions of the set {1, 2, 3}.
+# if we have computed a partial partition { {1}, {2} }, then we can expand it
+# with { 3 } to { {1}, {2}, {3} }.
+# but at the same time, we will also compute a partial partition { {1}, {3} }
+# and expand it with { 2 }, also to { {1}, {2}, {3} }.
+# So that is just one example of wasted resources.
+
+# what could be done about this?
+
+# maybe the refinement order on the partitions is interesting here. the above solution generates partial partitions (partitions of smaller sets), which are expanded to total partitions (partitions of the initial set). a solution that uses the refinement order would generate an initial total partition, and succesively change it to other total partitions (by making refinement steps). if we memoize results so far, this should make it a lot easier to avoid computing many duplicates.
+
+# ---------------------------------------------------------------------------
+# TODO solution 2: based on refinement
+# ---------------------------------------------------------------------------
+
+# pseudocode (not yet working)
+
+# given set S
+#
+# partitions = []
+# partition = finest_partition(S)
+# while partition != S
+#   take pair of elements from partition
+#   partition = union of pair plus the rest of partition
+#   partitions << partition
+
+# the structure of the algorithm is not yet correct, though.
+# because it does not take into account the branching structure.
+
+# ---------------------------------------------------------------------------
+# tests
+# ---------------------------------------------------------------------------
+
 
 # set = [].to_set
 # p partitions(set)
@@ -91,5 +124,5 @@ end
 #<Set: {#<Set: {#<Set: {1}>, #<Set: {2}>, #<Set: {3}>}>, #<Set: {#<Set: {1}>, #<Set: {2, 3}>}>, #<Set: {#<Set: {2}>, #<Set: {1, 3}>}>,
 #<Set: {#<Set: {3}>, #<Set: {1, 2}>}>, #<Set: {#<Set: {1, 2, 3}>}>}>
 
-set = (0..5).to_a.to_set
-p partitions(set)
+# set = (0..5).to_a.to_set
+# p partitions(set)
