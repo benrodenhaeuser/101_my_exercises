@@ -38,9 +38,9 @@ generate_partitions of S:
 
 def partitions(set)
   if set.size == 0
-    [set].to_set
+    [set].to_set # { {} }
   elsif set.size == 1
-    [[set].to_set].to_set
+    [[set].to_set].to_set # { { set } }
   else
     partitions = [].to_set
     non_empty_proper_subsets(set).each do |subset|
@@ -95,32 +95,32 @@ end
 # partitions = []
 # partition = finest_partition(S)
 # while partition != S
-#   take pair of elements from partition
-#   partition = union of pair plus the rest of partition
+#   take "next" pair of elements from partition
+#   partition = union of pair plus rest of partition
 #   partitions << partition
+#
+# ???
 
-# the structure of the algorithm is not yet correct, though.
-# because it does not take into account the branching structure.
 
 # ---------------------------------------------------------------------------
 # tests
 # ---------------------------------------------------------------------------
 
 
-# set = [].to_set
-# p partitions(set)
+set = [].to_set
+p partitions(set)
 #<Set: {#<Set: {}>}>
 
-# set = [1].to_set
-# p partitions(set)
+set = [1].to_set
+p partitions(set)
 #<Set: {#<Set: {#<Set: {1}>}>}>
 
-# set = [1, 2].to_set
-# p partitions(set)
+set = [1, 2].to_set
+p partitions(set)
 #<Set: {#<Set: {#<Set: {1}>, #<Set: {2}>}>, #<Set: {#<Set: {1, 2}>}>}>
 
-# set = [1, 2, 3].to_set
-# p partitions(set)
+set = [1, 2, 3].to_set
+p partitions(set)
 #<Set: {#<Set: {#<Set: {1}>, #<Set: {2}>, #<Set: {3}>}>, #<Set: {#<Set: {1}>, #<Set: {2, 3}>}>, #<Set: {#<Set: {2}>, #<Set: {1, 3}>}>,
 #<Set: {#<Set: {3}>, #<Set: {1, 2}>}>, #<Set: {#<Set: {1, 2, 3}>}>}>
 
