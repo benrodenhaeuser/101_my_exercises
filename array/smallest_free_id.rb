@@ -1,5 +1,7 @@
 # Given an array of `ids`, find the smallest id not in use. That is: given an array of non-negative integers, find the smallest integer not contained in the array.
 
+# source: skiena
+
 require 'benchmark'
 
 # ----------------------------------------------------------------------------
@@ -237,4 +239,4 @@ puts Benchmark.realtime { p smallest_free_id6(array) } # reduce and conquer
 
 # observations:
 # - it's hard to beat the built-in search!
-# - reduce and conquer 
+# - reduce and conquer
