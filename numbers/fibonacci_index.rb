@@ -1,6 +1,10 @@
 # find the smallest index such that the fibonacci number at that index
 # has a given number of digits
 
+# ---------------------------------------------------------------------------
+# with a loop
+# ---------------------------------------------------------------------------
+
 def find_fibonacci_index_by_length(number_of_digits)
   return 1 if number_of_digits == 1
 
@@ -20,8 +24,22 @@ def find_fibonacci_index_by_length(number_of_digits)
   index
 end
 
-p find_fibonacci_index_by_length(2) == 7
-p find_fibonacci_index_by_length(10) == 45
-p find_fibonacci_index_by_length(100) == 476
-p find_fibonacci_index_by_length(1000) == 4782
-p find_fibonacci_index_by_length(10000) == 47847 # this takes a bit
+# ---------------------------------------------------------------------------
+# with a loop that builds an array
+# ---------------------------------------------------------------------------
+
+def smallest_fibo(number_of_digits)
+  return 0 if number_of_digits == 1
+
+  f = []
+  f[0] = 0
+  f[1] = 1
+
+  i = 2
+
+  loop do
+    f[i] = f[i - 1] + f[i - 2]
+    break i if f[i].digits.count == number_of_digits
+    i +=1
+  end
+end
