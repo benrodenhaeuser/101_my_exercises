@@ -41,36 +41,41 @@ observations:
 
 def initial_state(times)
   {
-    positions: (0...times.size).map { |index| :south  }, # where are the soldiers?
-    speed: times, # how much time does each soldier need?
-    clock: 0, # time spent crossing so far
-    torch: :south, # is torch south or north?
-    number_of_soldiers: times.size # number of soldiers
+    soldiers: (0...times.size)
+    positions: (0...times.size).map { |index| :south  },
+    speed: times,
+    timer: 0,
+    torch: :south
   }
 end
 
 # a move: one-element or two-element array (elements are soldiers, i.e., indices)
 
 def moves(state)
-  if state[:torch] == :south
-    (0...state[:number_of_soldiers]).select do |soldier|
-      state[positions][soldier] == :south
-    end
-    choices.map { | }
+  if state[:torch] == :north
+    state[:soldiers].select do |soldier|
+      state[:positions][soldier] == :north
+    end.map { |soldier| [soldier] }
   else
-    # pick one index from the soldier array.
+    # any two soldiers in the south (as two-elem array)
   end
 end
 
-def make_move(state, soldiers, times)
-  # flip the position of a number of soldiers (north to south or vice versa)
-  # update the time
+def move_soldiers(state, soldiers)
+  # flip the position of every soldier in array soldiers
+  # add time accordingly
 end
 
-def unmake(move)
-  # flip the position of
+def unmove_soldiers(move, soldiers)
+  # flip the position of every soldier in array soldiers
+  # subtract time accordingly
 end
 
 def terminal?(state)
-  # everyone is north of the bridge
+  state[:positions].all? { |position| position == :north }
+end
+
+def solve(times)
+  state = initial_state(times)
+  # TODO: the backtracking algorithm
 end
