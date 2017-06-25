@@ -4,7 +4,6 @@
 # A paper on the topic: https://www.researchgate.net/publication/220530399_Crossing_the_Bridge_at_Night
 # Material on the puzzle: https://www.math.uni-bielefeld.de/~sillke/PUZZLES/crossing-bridge
 
-
 # ---------------------------------------------------------------------------
 # modeling the puzzle
 # ---------------------------------------------------------------------------
