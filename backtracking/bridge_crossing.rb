@@ -1,13 +1,9 @@
-=begin
+# A group of N soldiers has to cross a bridge at night, from south to north. A maximum of two people can cross the bridge at one time, and any party that crosses (either one or two people) must have a flashlight with them. There is only one flashlight. *The times taken by each person to cross the bridge are pairwise distinct.* If a pair of soldiers crosses the bridge together, the slower soldier's speed determines their joint pace. What is the minimal time to get everyone to the north?
 
-A group of N soldiers has to cross a bridge at night, from south to north. A maximum of two people can cross the bridge at one time, and any party that crosses (either one or two people) must have a flashlight with them. There is only one flashlight. The times taken by each person to cross the bridge are pairwise distinct. If a pair of soldiers crosses the bridge together, the slower soldier's speed determines their joint pace. What is the minimal time to get everyone to the north?
+# Wikipedia: https://en.wikipedia.org/wiki/Bridge_and_torch_problem
+# A paper on the topic: https://www.researchgate.net/publication/220530399_Crossing_the_Bridge_at_Night
+# Material on the puzzle: https://www.math.uni-bielefeld.de/~sillke/PUZZLES/crossing-bridge
 
-(Source: Levitin, Algorithmic Puzzles)
-
-Problem instance: 4 soldiers, who take 1/2/5/10 minutes to cross
-Solution: 17 minutes
-
-=end
 
 # ---------------------------------------------------------------------------
 # modeling the puzzle
@@ -100,10 +96,12 @@ end
 
 def time_to_cross(state)
   if terminal?(state)
+    # p state
     state[:timer]
   else
     moves(state).map do |move|
       make_move(move, state)
+      # p state
       time = time_to_cross(state)
       unmake_move(move, state)
       time
