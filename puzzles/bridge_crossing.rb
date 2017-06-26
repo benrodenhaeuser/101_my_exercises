@@ -1,30 +1,24 @@
+# Crossing the bridge at night
+
 # A group of N soldiers has to cross a bridge at night, from south to north. A
 # maximum of two people can cross the bridge at one time, and any party that
 # crosses (either one or two people) must have a flashlight with them. There is
-# only one flashlight. *The times taken by each person to cross the bridge are
-# pairwise distinct.* If a pair of soldiers crosses the bridge together, the
+# only one flashlight. If a pair of soldiers crosses the bridge together, the
 # slower soldier's speed determines their joint pace. What is the minimal time
 # to get everyone to the north?
 
-# ---------------------------------------------------------------------------
-# modeling the puzzle
-# ---------------------------------------------------------------------------
+# The times taken by the soldiers to cross the bridge are pairwise distinct.
 
-def soldiers(times)
-  (0...times.size).to_a
-end
-
-def initial_positions(times)
-  (0...times.size).map { :south  }
-end
-
-def initial_state(times)
+def initial_state(soldiers)
   {
-    soldiers: soldiers(times),
-    positions: initial_positions(times),
-    speed: times,
-    timer: 0
+    soldiers: soldiers,
+    positions: initial_positions(soldiers),
+    clock: 0
   }
+end
+
+def initial_positions(soldiers)
+  soldiers.map { |soldier| [soldier, :south] }.to_h
 end
 
 def soldiers_at(location, state)
@@ -33,7 +27,7 @@ def soldiers_at(location, state)
   end
 end
 
-def moves(state, location)
+def parties(location, state)
   if location == :north
     soldiers_at(:north, state).map { |soldier| [soldier] }
   else
@@ -41,74 +35,50 @@ def moves(state, location)
   end
 end
 
-def get_across(soldier, state, location)
-  state[:positions][soldier] = opposite(location)
-end
-
-def get_back(soldier, state, location)
-  state[:positions][soldier] = location
-end
-
 def opposite(location)
   location == :south ? :north : :south
 end
 
-def make_move(move, state, location)
-  move.each do |soldier|
-    get_across(soldier, state, location)
-  end
-  state[:timer] += move.map { |soldier| state[:speed][soldier] }.max
+def get_to(location, soldier, state)
+  state[:positions][soldier] = location
 end
 
-def unmake_move(move, state, location)
-  move.each do |soldier|
-    get_back(soldier, state, location)
+def transfer(party, state, location)
+  party.each do |soldier|
+    get_to(opposite(location), soldier, state)
   end
-  state[:timer] -= move.map { |soldier| state[:speed][soldier] }.max
+  state[:clock] += party.max
+end
+
+def untransfer(party, state, location)
+  party.each do |soldier|
+    get_to(location, soldier, state)
+  end
+  state[:clock] -= party.max
 end
 
 def terminal?(state)
-  state[:positions].all? { |position| position == :north }
+  state[:positions].values.all? { |position| position == :north }
 end
 
-# ---------------------------------------------------------------------------
-# backtracker
-# ---------------------------------------------------------------------------
-
-def time_to_cross(state, location = :south)
-  p state
+def minimal_crossing_time(state, location = :south)
   if terminal?(state)
-    state[:timer]
+    state[:clock]
   else
-    moves(state, location).map do |move|
-      make_move(move, state, location)
-      time = time_to_cross(state, opposite(location))
-      unmake_move(move, state, location)
+    parties(location, state).map do |party|
+      transfer(party, state, location)
+      time = minimal_crossing_time(state, opposite(location))
+      untransfer(party, state, location)
       time
     end.min
   end
 end
 
-# ---------------------------------------------------------------------------
-# tests
-# ---------------------------------------------------------------------------
+# tests:
+p minimal_crossing_time(initial_state([5, 10, 20, 25])) # 60
+p minimal_crossing_time(initial_state([1, 2, 5, 10])) # 17
+p minimal_crossing_time(initial_state([2, 3, 5, 8])) # 19
+p minimal_crossing_time(initial_state([1, 3, 6, 8, 12])) # 29
+p minimal_crossing_time(initial_state([1, 3, 4, 6, 8, 9])) # 31
 
-# basic machinery
-
-# state = initial_state([1, 2, 5, 10])
-# p soldiers_at(:north, state) # []
-# p soldiers_at(:south, state) # [0, 1, 2, 3]
-# p moves(state) # [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]]
-# make_move([0, 1], state)
-# p state[:timer] # 3
-# p state[:positions][0] # :north
-# p state[:positions][1] # :north
-# unmake_move([0, 1], state)
-# p state[:timer] # 0
-# p state[:positions][0] # :south
-# p state[:positions][1] # :south
-# p state[:torch] # :south
-# p terminal?(state) # false
-
-# "classical" problem instance
-p time_to_cross(initial_state([1, 2, 5, 10])) # 17
+# (https://www.math.uni-bielefeld.de/~sillke/PUZZLES/crossing-bridge)
