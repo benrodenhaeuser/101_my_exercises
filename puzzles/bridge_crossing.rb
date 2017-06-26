@@ -1,8 +1,10 @@
-# A group of N soldiers has to cross a bridge at night, from south to north. A maximum of two people can cross the bridge at one time, and any party that crosses (either one or two people) must have a flashlight with them. There is only one flashlight. *The times taken by each person to cross the bridge are pairwise distinct.* If a pair of soldiers crosses the bridge together, the slower soldier's speed determines their joint pace. What is the minimal time to get everyone to the north?
-
-# Wikipedia: https://en.wikipedia.org/wiki/Bridge_and_torch_problem
-# A paper on the topic: https://www.researchgate.net/publication/220530399_Crossing_the_Bridge_at_Night
-# Material on the puzzle: https://www.math.uni-bielefeld.de/~sillke/PUZZLES/crossing-bridge
+# A group of N soldiers has to cross a bridge at night, from south to north. A
+# maximum of two people can cross the bridge at one time, and any party that
+# crosses (either one or two people) must have a flashlight with them. There is
+# only one flashlight. *The times taken by each person to cross the bridge are
+# pairwise distinct.* If a pair of soldiers crosses the bridge together, the
+# slower soldier's speed determines their joint pace. What is the minimal time
+# to get everyone to the north?
 
 # ---------------------------------------------------------------------------
 # modeling the puzzle
@@ -21,8 +23,7 @@ def initial_state(times)
     soldiers: soldiers(times),
     positions: initial_positions(times),
     speed: times,
-    timer: 0,
-    torch: :south
+    timer: 0
   }
 end
 
@@ -32,56 +33,37 @@ def soldiers_at(location, state)
   end
 end
 
-def combinations(array, k = 2)
-  if k == 0
-    [[]]
-  elsif k == 1
-    array.map { |elem| [elem] }
-  elsif array.size >= k
-    combinations(array[1..-1], k - 1).map { |combo| [array[0]] + combo } +
-    combinations(array[1..-1], k)
-  else
-    []
-  end
-end
-
-def moves(state)
-  if state[:torch] == :north
+def moves(state, location)
+  if location == :north
     soldiers_at(:north, state).map { |soldier| [soldier] }
   else
-    combinations(soldiers_at(:south, state))
+    soldiers_at(:south, state).combination(2).to_a
   end
 end
 
-def move_across(soldier, state)
-  if state[:positions][soldier] == :south
-    state[:positions][soldier] = :north
-  else
-    state[:positions][soldier] = :south
-  end
+def get_across(soldier, state, location)
+  state[:positions][soldier] = opposite(location)
 end
 
-def carry_the_torch_across(state)
-  if state[:torch] == :south
-    state[:torch] = :north
-  else
-    state[:torch] = :south
-  end
+def get_back(soldier, state, location)
+  state[:positions][soldier] = location
 end
 
-def make_move(move, state)
+def opposite(location)
+  location == :south ? :north : :south
+end
+
+def make_move(move, state, location)
   move.each do |soldier|
-    move_across(soldier, state)
+    get_across(soldier, state, location)
   end
-  carry_the_torch_across(state)
   state[:timer] += move.map { |soldier| state[:speed][soldier] }.max
 end
 
-def unmake_move(move, state)
+def unmake_move(move, state, location)
   move.each do |soldier|
-    move_across(soldier, state)
+    get_back(soldier, state, location)
   end
-  carry_the_torch_across(state)
   state[:timer] -= move.map { |soldier| state[:speed][soldier] }.max
 end
 
@@ -93,16 +75,15 @@ end
 # backtracker
 # ---------------------------------------------------------------------------
 
-def time_to_cross(state)
+def time_to_cross(state, location = :south)
+  p state
   if terminal?(state)
-    # p state
     state[:timer]
   else
-    moves(state).map do |move|
-      make_move(move, state)
-      # p state
-      time = time_to_cross(state)
-      unmake_move(move, state)
+    moves(state, location).map do |move|
+      make_move(move, state, location)
+      time = time_to_cross(state, opposite(location))
+      unmake_move(move, state, location)
       time
     end.min
   end
@@ -122,7 +103,6 @@ end
 # p state[:timer] # 3
 # p state[:positions][0] # :north
 # p state[:positions][1] # :north
-# p state[:torch] # :north
 # unmake_move([0, 1], state)
 # p state[:timer] # 0
 # p state[:positions][0] # :south
