@@ -63,4 +63,5 @@ price_list = {
 
 p max_revenue(price_list, 4) # 10
 p max_revenue(price_list, 6) # 17
+p max_revenue(price_list, 8) # 22
 p max_revenue(price_list, 10) # 30
