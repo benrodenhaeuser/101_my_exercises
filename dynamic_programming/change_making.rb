@@ -10,7 +10,7 @@ DENOMINATIONS = [1, 3, 5, 4, 6, 9, 1, 3]
 
 def change(n)
   return [] if n == 0
-  return [1] if n == 1 # we are assuming we have pennies
+  return [1] if n == 1 # recall that we have pennies
 
   change = (1..n).map { 1 } # "worst case"
   for den in DENOMINATIONS.select { |value| value <= n }
@@ -18,9 +18,6 @@ def change(n)
   end
   change
 end
-
-# p change(12) # [9, 3]
-# p change(20) # [9, 6, 5] => this takes a long time
 
 # ----------------------------------------------------------------------------
 # tabulation
@@ -46,6 +43,13 @@ def change_tabu(amount)
 
   return table[amount]
 end
+
+# ----------------------------------------------------------------------------
+# tests
+# ----------------------------------------------------------------------------
+
+# p change(12) # [9, 3]
+# p change(20) # [9, 6, 5] => this takes a long time
 
 p change_tabu(9)  # [9]
 p change_tabu(12) # [9, 3]

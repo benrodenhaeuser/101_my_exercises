@@ -3,7 +3,7 @@
 # amount of money subject to the constraint that no two coins adjacent in the
 # initial row can be picked up.
 
-# (Levitin, p. 285)
+# (Levitin, Algorithm book, p. 285)
 
 # Approach:
 # How can we express the solution for n in terms of smaller solutions? The
