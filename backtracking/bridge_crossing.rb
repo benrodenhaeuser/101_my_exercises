@@ -8,6 +8,9 @@
 # to get everyone to the north?
 
 # The times taken by the soldiers to cross the bridge are pairwise distinct.
+# This is not a crucial assumption, but simplifies the modeling somewhat.
+
+# (Levitin, Puzzle Book)
 
 def initial_state(soldiers)
   {
@@ -27,11 +30,12 @@ def soldiers_at(location, state)
   end
 end
 
+# we rely on the fact that the optimal solution will be a succession of two guys going north, followed by one guy going south, and so on.
 def parties(location, state)
   if location == :north
-    soldiers_at(:north, state).map { |soldier| [soldier] }
+    soldiers_at(:north, state).map { |soldier| [soldier] } # one guy
   else
-    soldiers_at(:south, state).combination(2).to_a
+    soldiers_at(:south, state).combination(2).to_a # two guys
   end
 end
 
