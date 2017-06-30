@@ -32,14 +32,8 @@ def lps(string)
   end
 end
 
-# p lps('') == ''
-# p lps('a') == 'a'
-# p lps('ab') == 'a'
-# p lps('abuioba') == "abuba"
-# p lps('abuiobaslgkajsflkasjlfkjaabuiobaabuioba') == "abuibaajflklfjaabiuba"
-
 # -----------------------------------------------------------------------------
-# dynamic programming solution: memoization
+# memoization
 # -----------------------------------------------------------------------------
 
 def lps_memo(string, palindromes = {})
@@ -59,14 +53,8 @@ def lps_memo(string, palindromes = {})
   end
 end
 
-# p lps_memo('') == ''
-# p lps_memo('a') == 'a'
-# p lps_memo('ab') == 'a'
-# p lps_memo('abuioba') == "abuba"
-# p lps_memo('abuiobaslgkajsflkasjlfkjaabuiobaabuioba') == "abuibaajflklfjaabiuba"
-
 # -----------------------------------------------------------------------------
-# build table using enumeration of substrings by length
+# tabulation using enumeration of substrings
 # -----------------------------------------------------------------------------
 
 def substrings(string)
@@ -81,7 +69,7 @@ def substrings(string)
   substrings
 end
 
-def lps_tabu(string)
+def lps_substr(string)
   table = {}
 
   substrings(string).each do |string|
@@ -103,12 +91,92 @@ def lps_tabu(string)
   table[string]
 end
 
-p lps_tabu('') == ''
-p lps_tabu('a') == 'a'
-p lps_tabu('ab') == 'a'
-p lps_tabu('abuioba') == "abuba"
-p lps_tabu('abuiobaslgkajsflkasjlfkjaabuiobaabuioba') == "abuibaajflklfjaabiuba"
+# -----------------------------------------------------------------------------
+# tabulation with a two-dimensional matrix: approach
+# -----------------------------------------------------------------------------
+
+=begin
+
+-- given a string s with indices ranging from 0 to n, we build a matrix with
+   columns and rows both ranging from 0 to n.
+-- a cell matrix[i][j] is to be filled in with the lps of string[i..j]
+-- we fill in the matrix diagonal by diagonal.
+-- we start by filling in the 0-diagonal, i.e., the cells matrix[i][j] such
+   that i is equal to j. for each such cell, the value to be filled in is string[i] (== string[j]).
+-- next, we consider the 1-diagonal (i.e. cells matrix[i][j] such that
+   j - i == 1). here, the rule is: if the chars match, take the pair, else take the first char. (it would be nice to avoid this, but I don't see how right now)
+-- for the remaining diagonals, we do it recursively.
+-- we apply the (adapted) recurrence, i.e.
+
+      matrix[i][j] =
+        if string[i] == string[j]
+          then string[i] + matrix[i-1][j+1] + string[j]
+        else
+          [matrix[i - 1][j], matrix[i][j+1]].max_by_length
+
+=end
 
 # -----------------------------------------------------------------------------
-# with a two-dimensional matrix
+# tabulation with a two-dimensional matrix: implementation
 # -----------------------------------------------------------------------------
+
+def lps_matrix(string)
+  return '' if string == ''
+
+  matrix = Array.new(string.size, nil)
+  matrix.each_index { |index| matrix[index] = Array.new(string.size, nil)}
+
+  # 0-diagonal
+  (0..string.size - 1).each do |row_idx|
+    col_idx = row_idx
+    matrix[row_idx][col_idx] = string[row_idx]
+  end
+
+  # other diagonals (1-diagonal to (size - 1)-diagonal)
+  (1..string.size - 1).each do |diag|
+    (0..string.size - (diag + 1)).each do |row_idx|
+      col_idx = row_idx + diag
+      matrix[row_idx][col_idx] =
+        if string[row_idx] == string[col_idx]
+          string[row_idx] + (matrix[row_idx + 1][col_idx - 1]).to_s + string[col_idx]
+        else
+          [
+            matrix[row_idx][col_idx - 1],
+            matrix[row_idx + 1][col_idx]
+          ].max_by { |string| string.length }
+        end
+    end
+
+  end
+
+  matrix[0][string.size - 1]
+
+end
+
+# -----------------------------------------------------------------------------
+# tests
+# -----------------------------------------------------------------------------
+
+# p lps('') == ''
+# p lps('a') == 'a'
+# p lps('ab') == 'a'
+# p lps('abuioba') == "abuba"
+# p lps('abuiobaslgkajsflkasjlfkjaabuiobaabuioba') == "abuibaajflklfjaabiuba"
+
+# p lps_memo('') == ''
+# p lps_memo('a') == 'a'
+# p lps_memo('ab') == 'a'
+# p lps_memo('abuioba') == "abuba"
+# p lps_memo('abuiobaslgkajsflkasjlfkjaabuiobaabuioba') == "abuibaajflklfjaabiuba"
+
+# p lps_substr('') == ''
+# p lps_substr('a') == 'a'
+# p lps_substr('ab') == 'a'
+# p lps_substr('abuioba') == "abuba"
+# p lps_substr('abuiobaslgkajsflkasjlfkjaabuiobaabuioba') == "abuibaajflklfjaabiuba"
+
+p lps_matrix('') == ''
+p lps_matrix('a') == 'a'
+p lps_matrix('ab') == 'a'
+p lps_matrix('abuioba') == "abuba"
+p lps_matrix('abuiobaslgkajsflkasjlfkjaabuiobaabuioba') == "abuibaajflklfjaabiuba"
