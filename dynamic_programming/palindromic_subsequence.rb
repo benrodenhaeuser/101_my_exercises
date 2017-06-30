@@ -54,7 +54,7 @@ def lps_memo(string, palindromes = {})
 end
 
 # -----------------------------------------------------------------------------
-# tabulation using enumeration of substrings
+# using enumeration of substrings
 # -----------------------------------------------------------------------------
 
 def substrings(string)
@@ -126,27 +126,30 @@ def lps_matrix(string)
   matrix = Array.new(string.size, nil)
   matrix.each_index { |index| matrix[index] = Array.new(string.size, nil)}
 
-  # 0-diagonal
-  (0..string.size - 1).each do |row_idx|
-    col_idx = row_idx
-    matrix[row_idx][col_idx] = string[row_idx]
-  end
+  (1..string.size).each do |length|
 
-  # other diagonals (1-diagonal to (size - 1)-diagonal)
-  (1..string.size - 1).each do |diag|
-    (0..string.size - (diag + 1)).each do |row_idx|
-      col_idx = row_idx + diag
-      matrix[row_idx][col_idx] =
-        if string[row_idx] == string[col_idx]
-          string[row_idx] + (matrix[row_idx + 1][col_idx - 1]).to_s + string[col_idx]
-        else
-          [
-            matrix[row_idx][col_idx - 1],
-            matrix[row_idx + 1][col_idx]
-          ].max_by { |string| string.length }
-        end
+    if length == 1
+
+      (0..string.size - 1).each do |idx|
+        matrix[idx][idx] = string[idx]
+      end
+
+    else
+
+      (0..string.size - length).each do |row_idx|
+        col_idx = row_idx + length - 1
+        matrix[row_idx][col_idx] =
+          if string[row_idx] == string[col_idx]
+            string[row_idx] + (matrix[row_idx + 1][col_idx - 1]).to_s + string[col_idx]
+          else
+            [
+              matrix[row_idx][col_idx - 1],
+              matrix[row_idx + 1][col_idx]
+            ].max_by { |string| string.length }
+          end
+      end
+
     end
-
   end
 
   matrix[0][string.size - 1]
@@ -175,8 +178,8 @@ end
 # p lps_substr('abuioba') == "abuba"
 # p lps_substr('abuiobaslgkajsflkasjlfkjaabuiobaabuioba') == "abuibaajflklfjaabiuba"
 
-p lps_matrix('') == ''
-p lps_matrix('a') == 'a'
-p lps_matrix('ab') == 'a'
-p lps_matrix('abuioba') == "abuba"
-p lps_matrix('abuiobaslgkajsflkasjlfkjaabuiobaabuioba') == "abuibaajflklfjaabiuba"
+# p lps_matrix('') == ''
+# p lps_matrix('a') == 'a'
+# p lps_matrix('ab') == 'a'
+# p lps_matrix('abuioba') == "abuba"
+# p lps_matrix('abuiobaslgkajsflkasjlfkjaabuiobaabuioba') == "abuibaajflklfjaabiuba"
