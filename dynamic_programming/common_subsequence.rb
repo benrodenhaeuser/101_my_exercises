@@ -63,34 +63,29 @@ end
 # dynamic programming solution
 # -----------------------------------------------------------------------------
 
+BLANK = ' '
+
 def lcs_dp(string, other_string)
 
-  # insert blank prefix
-  string = ' ' + string
-  other_string = ' ' + other_string
+  string = BLANK + string
+  other_string = BLANK + other_string
+  lcs = Array.new(string.size, [])
+  (0...string.length).each { |index| lcs[index][0] = BLANK }
+  (0...other_string.length).each { |index| lcs[0][index] = BLANK }
 
-  # initialize table
-  lcs = []
-  (0...string.length).each { |index| lcs[index] = [] }
-  (0...string.length).each { |index| lcs[index][0] = ' ' }
-  (0...other_string.length).each { |index| lcs[0][index] = ' ' }
-
-  # fill in rows one by one
-  (1...string.length).each do |index| # for each row
-    (1...other_string.length).each do |other_index| # for each column
+  (1...string.length).each do |index|
+    (1...other_string.length).each do |other_index|
 
       lcs[index][other_index] =
         if string[index] == other_string[other_index]
-          lcs[index - 1][other_index - 1] + string[index]
+          lcs[index - 1][other_index - 1] + string[index] # ↖
         else
-          [lcs[index - 1][other_index], lcs[index][other_index - 1]].max_by { |string| string.length }
+          [lcs[index - 1][other_index], lcs[index][other_index - 1]].max_by { |string| string.length } # ↑ or ←
         end
-
     end
   end
 
-  # remove blank prefix and return
-  lcs[string.size - 1][other_string.size - 1].slice(1..-1)
+  lcs[string.size - 1][other_string.size - 1].lstrip # lstrip removes blank
 
 end
 
@@ -98,12 +93,16 @@ end
 # tests
 # -----------------------------------------------------------------------------
 
+# "naive" solution:
+
 # p lcs('', '') == ''
 # p lcs('', 'a') == ''
 # p lcs('a', 'b') == ''
 # p lcs('a', 'a') == 'a'
 # p lcs('abcxuuuux', 'ux') == 'ux'
 # p lcs('kabcde', 'bkadcde') == 'kacde'
+
+# dynamic programming solution:
 
 p lcs_dp('', '') == ''
 p lcs_dp('', 'a') == ''
