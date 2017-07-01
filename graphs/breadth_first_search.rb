@@ -1,4 +1,4 @@
-# problem: traverse a graph in the breadth-first manner.
+# problem: traverse a (point-generated) graph in the breadth-first manner.
 
 # -----------------------------------------------------------------------------
 # outline of algorithm
@@ -32,20 +32,19 @@ require 'thread'
 def breadth_first(graph, vertex)
   queue = Queue.new
   queue.enq(vertex)
-  colors = { vertex => :black }
-
-  list_of_vertices = []
+  acknowledged = { vertex => true }
+  discovered = {}
 
   while !queue.empty?
     next_vtx = queue.deq
-    list_of_vertices << next_vtx
+    discovered[next_vtx] = true
     graph[next_vtx].each do |neighbor|
-      queue.enq(neighbor) unless colors[neighbor] == :black
-      colors[neighbor] = :black
+      queue.enq(neighbor) unless acknowledged[neighbor]
+      acknowledged[neighbor] = true
     end
   end
 
-  list_of_vertices
+  discovered.keys
 
 end
 
