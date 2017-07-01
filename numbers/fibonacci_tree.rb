@@ -33,9 +33,9 @@ end
 # the fibonacci method itself
 def fibonacci(number)
   if number < 2
-    number # base case: fibonacci(1) = 1 and fibonacci(2) = 2
+    number
   else
-    fibonacci(number - 1) + fibonacci(number - 2) # recursive case: "the sum of the results for the two preceding naturals"
+    fibonacci(number - 1) + fibonacci(number - 2)
   end
 end
 
