@@ -27,6 +27,8 @@ a queue, depth-first search uses a stack.
 # breadth-first search with a queue
 # -----------------------------------------------------------------------------
 
+# returns list of vertices in the order in which they were processed
+
 require 'thread'
 
 def breadth_first(graph, source)
@@ -38,7 +40,6 @@ def breadth_first(graph, source)
 
   while !queue.empty?
     vtx = queue.deq
-    # any further processing of vtx would go here
     processed[vtx] = true
     graph[vtx].each do |neighbor|
       queue.enq(neighbor) unless visited[neighbor]
@@ -54,6 +55,8 @@ end
 # breadth-first search with a stack
 # -----------------------------------------------------------------------------
 
+# returns list of vertices in the order in which they were processed
+
 def depth_first(graph, source)
   stack = [source]
   visited = { source => true }
@@ -62,7 +65,6 @@ def depth_first(graph, source)
 
   while !stack.empty?
     vtx = stack.pop
-    # any further processing of vtx would go here 
     processed[vtx] = true
     graph[vtx].each do |neighbor|
       stack.push(neighbor) unless visited[neighbor]
