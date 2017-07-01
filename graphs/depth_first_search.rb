@@ -1,7 +1,8 @@
 # depth-first search of a graph
 
 # in the following, we are making the assumption that the graph is
-# "point-generated". of course, this assumption is not warranted in general!
+# "point-generated". for the general case, we need a wrapper method that
+# explores all possible source vertices for exploring the graph.
 
 # -----------------------------------------------------------------------------
 # output: list of discovered vertices ("DFS ordering")

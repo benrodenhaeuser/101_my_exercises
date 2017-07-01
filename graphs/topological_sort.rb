@@ -6,13 +6,10 @@
 
 =begin
 
-the order in which vertices are popped off of the stack
-traces the required sorting order: elements that are popped off of the stack
-earlier are "to the right" of all elements popped off of the stack later.
-
-so recording the popped off elements in a list provides a solution for
-topological sorting (if we push all popped off elements to the list, we just
-have to reverse it in the end).
+the order in which vertices are popped off of the stack in depth first search
+tracks the required sorting order in reverse: elements that are popped off of
+the stack earlier are "to the right" of all elements popped off of the stack
+later.
 
 (levitin, algorithms book, p. 139)
 (CLRS also describe this algorithm)
@@ -20,14 +17,14 @@ have to reverse it in the end).
 =end
 
 # -----------------------------------------------------------------------------
-# implementation with depth-first search
+# implementation with iterative depth-first search
 # -----------------------------------------------------------------------------
 
-# (see depth_first_search.rb for the dfs algorithm I am using here.)
+# (see depth_first_search.rb for the dfs algorithm used here.)
 
-def topo_sort(graph)
+def topo_sort_it(graph)
   discovered = {}
-  list = []
+  sorted_list = []
   stack = []
 
   graph.keys.each do |vtx|
@@ -48,17 +45,42 @@ def topo_sort(graph)
         stack.push([next_vtx, 0]) unless discovered[next_vtx]
         discovered[next_vtx] = true
       else
-        list << stack.pop.first
+        sorted_list << stack.pop.first
       end
 
     end
   end
 
-  list.reverse
+  sorted_list.reverse
 end
 
+# -----------------------------------------------------------------------------
+# implementation with recursive depth-first search
+# -----------------------------------------------------------------------------
 
+# note that we have two places where we push to the sorted list, which seems
+# odd on one hand. on the other hand, it's maybe not so odd, because these are
+# the two places where a method returns, i.e., a vertex is popped off the call
+# stack.
 
+def topo_sort_rec_wrap(graph, discovered = {}, sorted_list = [])
+  graph.keys.each do |vtx|
+    next if discovered[vtx]
+    topo_sort_rec(graph, vtx, discovered, sorted_list)
+    sorted_list << vtx
+  end
+  sorted_list.reverse
+end
+
+def topo_sort_rec(graph, vtx, discovered = {}, sorted_list)
+  discovered[vtx] = true
+  graph[vtx].each do |neighbor|
+    unless discovered[neighbor]
+      topo_sort_rec(graph, neighbor, discovered, sorted_list)
+      sorted_list << neighbor
+    end
+  end
+end
 
 # -----------------------------------------------------------------------------
 # solution using in-degrees
@@ -113,19 +135,19 @@ end
 
 def topo_sort_in_degrees(graph)
   in_degrees = get_in_degrees(graph)
-  next_vertices = graph.keys.select { |vtx| in_degrees[vtx] == 0 }
-  list = []
+  zero_vertices = graph.keys.select { |vtx| in_degrees[vtx] == 0 }
+  sorted_list = []
 
-  while vtx = next_vertices.pop
-    list << vtx
+  while vtx = zero_vertices.pop
+    sorted_list << vtx
     in_degrees[vtx] = -1
     graph[vtx].each do |neighbor|
       in_degrees[neighbor] -= 1
-      next_vertices.push(neighbor) if in_degrees[neighbor] == 0
+      zero_vertices.push(neighbor) if in_degrees[neighbor] == 0
     end
   end
 
-  list
+  sorted_list
 end
 
 
@@ -141,19 +163,11 @@ graph = {
   :c5 => []
 }
 
-# test with depth-first search:
-p topo_sort(graph) == [:c2, :c1, :c3, :c4, :c5]
+# test with iterative depth-first search:
+p topo_sort_it(graph) == [:c2, :c1, :c3, :c4, :c5]
 
-# the evolution of the stack during the execution:
-# [[:c1, 0]]
-# [[:c1, 1], [:c3, 0]]
-# [[:c1, 1], [:c3, 1], [:c4, 0]]
-# [[:c1, 1], [:c3, 1], [:c4, 1], [:c5, 0]]
-# [[:c1, 1], [:c3, 1], [:c4, 1]]
-# [[:c1, 1], [:c3, 1]]
-# [[:c1, 1], [:c3, 2]]
-# [[:c1, 1]] # finally done with :c1 now
-# [[:c2, 0]] # the trace for :c2 is short: everything else has been visited!
-# [[:c2, 1]]
+# test with recursive depth-first search:
+p topo_sort_rec_wrap(graph) == [:c2, :c1, :c3, :c4, :c5]
 
+# test with in-degrees implementation:
 p topo_sort_in_degrees(graph) == [:c2, :c1, :c3, :c4, :c5]
