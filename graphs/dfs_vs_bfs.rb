@@ -12,14 +12,19 @@ similarity between dfs and bfs.
 one could say that the only real difference is that breadth-first search uses
 a queue, depth-first search uses a stack.
 
-- the queue/stack represents vertices we plan to visit.
+- the queue/stack represents vertices we plan to process.
 - the process of enqueuing vertices/pushing vertices on the stack represents
-  "visiting" these vertices.
+  "encountering" these vertices for the first time.
 - we are, on the other hand, "processing" a vertex as we dequeue a vertex/pop
   it from the stack.
-- the implementations below make the distinction between "visiting" and
-  "processing" explicit, even though that is not necessary to get the
-  respective algorithms to work.
+- the implementations below make the distinction between "encountering" and
+  "processing" explicit.
+
+- when we print the list of encountered and processed vertices, we see that
+  depth-first search processes vertices in the order in which they are
+  encountered, while breadth-first search chooses a different order of
+  processing (namely breadth-first :-)). in that sense, one could perhaps call
+  depth-first the more "natural" strategy.
 
 =end
 
@@ -34,7 +39,7 @@ require 'thread'
 def breadth_first(graph, source)
   queue = Queue.new
   queue.enq(source)
-  visited = { source => true }
+  encountered = { source => true }
 
   processed = {}
 
@@ -42,10 +47,15 @@ def breadth_first(graph, source)
     vtx = queue.deq
     processed[vtx] = true
     graph[vtx].each do |neighbor|
-      queue.enq(neighbor) unless visited[neighbor]
-      visited[neighbor] = true
+      unless encountered[neighbor]
+        queue.enq(neighbor)
+        encountered[neighbor] = true
+      end
     end
   end
+
+  puts "dfs – encountered: #{encountered.keys}"
+  puts "dfs –   processed: #{processed.keys}"
 
   processed.keys
 
@@ -59,7 +69,7 @@ end
 
 def depth_first(graph, source)
   stack = [source]
-  visited = { source => true }
+  encountered = { source => true }
 
   processed = {}
 
@@ -67,10 +77,15 @@ def depth_first(graph, source)
     vtx = stack.pop
     processed[vtx] = true
     graph[vtx].each do |neighbor|
-      stack.push(neighbor) unless visited[neighbor]
-      visited[neighbor] = true
+      unless encountered[neighbor]
+        stack.push(neighbor)
+        encountered[neighbor] = true
+      end
     end
   end
+
+  puts "bfs – encountered: #{encountered.keys}"
+  puts "bfs –   processed: #{processed.keys}"
 
   processed.keys
 
