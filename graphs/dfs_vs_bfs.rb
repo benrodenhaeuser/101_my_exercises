@@ -24,7 +24,7 @@ a queue, depth-first search uses a stack.
 =end
 
 # -----------------------------------------------------------------------------
-# breadth-first search with a queue
+# breadth-first search (queue)
 # -----------------------------------------------------------------------------
 
 # returns list of vertices in the order in which they were processed
@@ -52,7 +52,7 @@ def breadth_first(graph, source)
 end
 
 # -----------------------------------------------------------------------------
-# breadth-first search with a stack
+# depth-first search (stack )
 # -----------------------------------------------------------------------------
 
 # returns list of vertices in the order in which they were processed
