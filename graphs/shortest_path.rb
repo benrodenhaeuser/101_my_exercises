@@ -1,4 +1,4 @@
-# determine the distance in number of edges between two vertices in a graph.
+# determine the distance (in number of edges) between two vertices in a graph.
 
 # -----------------------------------------------------------------------------
 # algorithm
@@ -8,7 +8,10 @@
   - we assume that both source and target are vertices of the graph.
   - what if there is no path connecting source and target? return nil.
   - do a breadth-first search of the graph starting at v1.
-  - TODO: describe policy
+  - we keep track of the distance of the nodes we enqueue: the distance of a
+    vertex to the source is 1 + the distance of its parent vertex to the source.
+  - we check whether we have found the target as we dequeue.
+  - (we could just as well do this check as we enqueue a node, I suppose). 
 
 =end
 
@@ -39,8 +42,8 @@ end
 # simplified solution
 # -----------------------------------------------------------------------------
 
-# we don't need the visited hash, we can repurpose the distances hash to check
-# if we have already visited a vertex.
+# we don't need a separate `visited` hash, as the `distances` hash already
+# has the information whether we have visited a hash.
 
 def distance(graph, source, target)
   queue = Queue.new
@@ -49,7 +52,7 @@ def distance(graph, source, target)
 
   while !queue.empty?
     vtx = queue.deq
-    return distances[vtx] if vtx == target
+    return distances[vtx] if vtx == target # processing step
     graph[vtx].each do |neighbor|
       queue.enq(neighbor) unless distances[neighbor]
       distances[neighbor] = distances[vtx] + 1
@@ -58,6 +61,9 @@ def distance(graph, source, target)
 
   return nil
 end
+
+# we could process the vertex as we enqueue it. then we need to take care of
+# case where source equals target separately.
 
 # -----------------------------------------------------------------------------
 # tests
