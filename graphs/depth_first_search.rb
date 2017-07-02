@@ -17,7 +17,7 @@ def depth_first_d(graph, vtx, discovered = {})
 end
 
 # -----------------------------------------------------------------------------
-# output: list of vertices in the order in which they were visited
+# output: the order in which vertices where visited (with repetitions!)
 # -----------------------------------------------------------------------------
 
 def depth_first_v(graph, vtx, visited = [])
