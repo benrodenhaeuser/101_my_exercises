@@ -20,7 +20,7 @@
 =end
 
 # -----------------------------------------------------------------------------
-# algorithm
+# prim algorithm
 # -----------------------------------------------------------------------------
 
 =begin
@@ -39,17 +39,17 @@
 # data structure
 # -----------------------------------------------------------------------------
 
-# we are going to store a graph as a pair (vertices, edges), where vertices is an array of the vertices in the graph, and edges is an array that looks like this:
+# we are going to represent a graph as a pair (vertices, edges), where the edges are labeled and thus given as triples:
 
 [ [:a, 10, :b], [:a, 10, :c], [:c, 10, :a], [:b, 10, :a] ]
 
 # so given an edge edge = [:a, 10, :c],
 # - edge[0] is the origin of the edge,
-# - edge[1] is the weight,
-# - edge[2] is the target.
+# - edge[1] is the weight of the edge,
+# - edge[2] is the destination of the edge.
 
 # -----------------------------------------------------------------------------
-# first implementation
+# first implementation of prim's algorithm
 # -----------------------------------------------------------------------------
 
 def minimum_spanning_tree(vertices, edges)
@@ -66,6 +66,13 @@ def minimum_spanning_tree(vertices, edges)
   end
   tree
 end
+
+# the weak point of this algorithm is the way we manage the choices. we
+# compute them from scratch on each iteration of the while loop. it would be
+# better to maintain a set of choices, adding and removing elements as the
+# algorithm proceeds. another weak point is the delete-operations on the
+# to_pick-array. this could be improved by using a hash flagging what vertices
+# may still be picked.
 
 # -----------------------------------------------------------------------------
 # tests
