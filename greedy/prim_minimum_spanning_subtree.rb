@@ -49,7 +49,7 @@
 # - edge[2] is the destination of the edge.
 
 # -----------------------------------------------------------------------------
-# first implementation of prim's algorithm
+# an attempt at implementing prim's algorithm
 # -----------------------------------------------------------------------------
 
 def minimum_spanning_tree(vertices, edges)
