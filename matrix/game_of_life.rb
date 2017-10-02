@@ -131,11 +131,11 @@ def get_next_grid(grid)
 
       next_grid[row_index][col_index] =
         if alive_neighbours == 2
-          grid[row_index][col_index]
+          grid[row_index][col_index] # maintains previous status
         elsif alive_neighbours == 3
-          true
+          true # becomes alive
         else
-          false
+          false # dies
         end
     end
   end
