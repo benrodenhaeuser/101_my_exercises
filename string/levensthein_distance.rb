@@ -2,7 +2,7 @@
 
 The Levenshtein distance is a string metric for measuring the difference between two sequences. Informally, the Levenshtein distance between two words is the minimum number of single-character edits (*insertions*, *deletions* or *substitutions*) required to change one word into the other.
 
-Use the Levenshtein recurrence
+See https://en.wikipedia.org/wiki/Levenshtein_distance for a definition of the Levensthein recurrence.
 
 =end
 
@@ -52,6 +52,38 @@ def levensthein_dyn(string1, string2)
 end
 
 # ---------------------------------------------------------------------------
+# Transform string1 into string2 (first attempt)
+# ---------------------------------------------------------------------------
+
+def levensthein_edit(string1, string2, edits)
+
+  # fine
+  if string1 == ''
+    0.upto(string2.length - 1) { |num| edits << string2[0..num] }
+    string2.length
+  elsif string2 == ''
+    (string1.length - 1).downto(0) { |num| edits << string1[0..num] }
+    string1.length
+  # does not work yet
+  else
+
+    cost =
+      string1[-1] == string2[-1] ? 0 : 1
+
+      [
+        levensthein_rec(string1[0...-1], string2) + 1, # delete
+        levensthein_rec(string1, string2[0...-1]) + 1, # delete
+        levensthein_rec(string1[0...-1], string2[0...-1]) + cost # substitute
+      ].min
+  end
+
+end
+
+# perhaps the dp solution can be more easily adapated to a solution that
+# also gives the edit sequence?
+
+
+# ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
 
@@ -66,3 +98,27 @@ p levensthein_dyn('b', 'ben') == 2
 p levensthein_dyn('kitten', 'sitting') == 3
 p levensthein_dyn('body', 'podium') == 4
 p levensthein_dyn('magnus', 'richel') == 6
+
+edits = []
+levensthein_edit('', 'ben', edits)
+p edits
+
+edits = []
+levensthein_edit('ben', '', edits)
+p edits
+
+edits = []
+p levensthein_edit('kitten', 'sitting', edits) == 3
+p edits
+
+
+# ---------------------------------------------------------------------------
+# Applications
+# ---------------------------------------------------------------------------
+
+=begin
+
+- find matches for a given string in a text with Levensthein distance up to x.
+- spell-checking, optical character recognition
+
+=end
