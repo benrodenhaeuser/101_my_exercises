@@ -40,9 +40,9 @@ def levensthein_dyn(string1, string2)
         cost = (string1[row - 1] == string2[col - 1]) ? 0 : 1
         table[row][col] =
           [
-            table[row - 1][col] + 1,
-            table[row][col - 1] + 1,
-            table[row - 1][col - 1] + cost
+            table[row - 1][col] + 1, # delete
+            table[row][col - 1] + 1, # insert (?)
+            table[row - 1][col - 1] + cost # substitute
           ].min
       end
     end
@@ -55,33 +55,12 @@ end
 # Transform string1 into string2 (first attempt)
 # ---------------------------------------------------------------------------
 
-def levensthein_edit(string1, string2, edits)
+=begin
 
-  # fine
-  if string1 == ''
-    0.upto(string2.length - 1) { |num| edits << string2[0..num] }
-    string2.length
-  elsif string2 == ''
-    (string1.length - 1).downto(0) { |num| edits << string1[0..num] }
-    string1.length
-  # does not work yet
-  else
+- record for each position of the string, what happens there?
+- however, what about insertions (string grows)? – from "bat" to "boat"
 
-    cost =
-      string1[-1] == string2[-1] ? 0 : 1
-
-      [
-        levensthein_rec(string1[0...-1], string2) + 1, # delete
-        levensthein_rec(string1, string2[0...-1]) + 1, # delete
-        levensthein_rec(string1[0...-1], string2[0...-1]) + cost # substitute
-      ].min
-  end
-
-end
-
-# perhaps the dp solution can be more easily adapated to a solution that
-# also gives the edit sequence?
-
+=end
 
 # ---------------------------------------------------------------------------
 # Tests
