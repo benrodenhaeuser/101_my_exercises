@@ -160,7 +160,7 @@ class MultiSetTest < Minitest::Test
   def test_elem_count_getter_alias
     multi_set = MultiSet[1, 2, 3, 3]
     expected = 2
-    assert_equal(expected, multi_set.count(3))
+    assert_equal(expected, multi_set[3])
   end
 
   def test_elem_count_setter
@@ -215,7 +215,7 @@ class MultiSetTest < Minitest::Test
 
   def test_difference
 
-  end 
+  end
 
   def test_each_with_block
     multi_set = MultiSet[1, 2, 3, 3]
@@ -226,5 +226,24 @@ class MultiSetTest < Minitest::Test
 
   def test_each_without_block
     MultiSet.new.each.instance_of?(Enumerator)
+  end
+end
+
+class SetTest < Minitest::Test
+  def test_sum_undefined
+    set1 = Set[1, 2, 3]
+    set2 = set1
+    assert_raises NoMethodError do
+      set1.sum!(set2)
+    end
+    assert_raises NoMethodError do
+      set1.sum(set2)
+    end
+  end
+
+  def test_that_not_counting_elements_works
+    set = Set[1, 2, 3, 4, 4]
+    expected = [1, 2, 3, 4]
+    assert_equal(expected, set.to_a)
   end
 end

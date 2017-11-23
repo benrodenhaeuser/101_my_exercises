@@ -14,12 +14,18 @@ class MultiSet
 
   def size
     @hash.values.sum
+    # TODO: or should we keep track of this on our own?
+    # this seems to be an improvement, because this is not constant time for sure.
   end
 
   def to_a
-    @hash.each_with_object([]) do |(key, value), array|
-      value.times { array << key }
+    each_with_object([]) do |elem, array|
+      array << elem
     end
+  end
+
+  def to_s
+    # todo
   end
 
   def [](elem)
@@ -34,7 +40,13 @@ class MultiSet
 
   def add(elem)
     @hash[elem] += 1
+    self
   end
+
+  def flatten
+    # TODO
+  end
+
 
   #
   # operations with enums: destructive
@@ -64,6 +76,7 @@ class MultiSet
 
   #
   # operations with enums: non-destructive
+  #
 
   def sum(enum)
     the_sum = self.dup
@@ -88,15 +101,27 @@ class MultiSet
 
   #
   # predicates
+  #
+
+  # TODO
 
 
   #
   # enum operations
+  #
 
   def each
     return to_enum(&:each) unless block_given?
 
     @hash.each { |elem, count| count.times { yield(elem) } }
+  end
+
+  def map
+    # todo
+  end
+
+  def select
+    # todo
   end
 
   private
@@ -109,4 +134,19 @@ class MultiSet
     return enum.each unless block_given?
     enum.each { |elem| yield elem }
   end
+end
+
+class Set < MultiSet
+  def size
+    @hash.keys.count
+  end
+
+  def each
+    return to_enum(&:each) unless block_given?
+
+    @hash.each_key { |elem| yield(elem) }
+  end
+
+  undef_method :sum # TODO: do we need to keep it?
+  undef_method :sum!
 end
