@@ -1,5 +1,6 @@
 require 'minitest/autorun'
 require_relative 'my_set'
+require_relative 'multi_set_2'
 
 class MySetTest < Minitest::Test
   def test_equality_is_order_independent
@@ -134,5 +135,96 @@ class MySetTest < Minitest::Test
     set5 = MySet[set4, 4, set1]
     expected = MySet[1, 2, 3, 4, 5, 6, 7]
     assert_equal(expected, set5.flatten)
+  end
+end
+
+class MultiSetTest < Minitest::Test
+  def test_initialize_and_to_a
+    multi_set = MultiSet[1, 2, 3, 3]
+    expected = [1, 2, 3, 3]
+    assert_equal(expected, multi_set.to_a)
+  end
+
+  def test_size
+    multi_set = MultiSet[1, 2, 3, 3]
+    expected = 4
+    assert_equal(expected, multi_set.size)
+  end
+
+  def test_elem_count_getter
+    multi_set = MultiSet[1, 2, 3, 3]
+    expected = 2
+    assert_equal(expected, multi_set[3])
+  end
+
+  def test_elem_count_getter_alias
+    multi_set = MultiSet[1, 2, 3, 3]
+    expected = 2
+    assert_equal(expected, multi_set.count(3))
+  end
+
+  def test_elem_count_setter
+    multi_set = MultiSet[1, 2, 3, 3]
+    multi_set[2] = 2
+    expected = [1, 2, 2, 3, 3]
+    assert_equal(expected, multi_set.to_a)
+  end
+
+  def test_add_element
+    multi_set = MultiSet[1, 2, 3, 3]
+    multi_set.add(5)
+    expected = [1, 2, 3, 3, 5]
+    assert_equal(expected, multi_set.to_a)
+  end
+
+  def test_sum!
+    multi_set1 = MultiSet[1, 2, 3, 3]
+    multi_set2 = MultiSet[2, 4]
+    multi_set1.sum!(multi_set2)
+    expected = 2
+    assert_equal(expected, multi_set1[2])
+  end
+
+  def test_union!
+    multi_set1 = MultiSet[1, 2, 3, 3]
+    multi_set2 = MultiSet[2, 4]
+    multi_set1.merge(multi_set2)
+    expected = [1, 2, 3, 3, 4]
+    assert_equal(expected, multi_set1.to_a)
+  end
+
+  def test_intersection!
+
+  end
+
+  def test_difference!
+
+  end
+
+  def test_sum
+
+  end
+
+  def test_union
+
+  end
+
+  def test_intersection
+
+  end
+
+  def test_difference
+
+  end 
+
+  def test_each_with_block
+    multi_set = MultiSet[1, 2, 3, 3]
+    array = []
+    multi_set.each { |elem| array << elem }
+    assert_equal(array, [1, 2, 3, 3])
+  end
+
+  def test_each_without_block
+    MultiSet.new.each.instance_of?(Enumerator)
   end
 end
