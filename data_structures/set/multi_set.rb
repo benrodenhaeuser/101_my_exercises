@@ -6,7 +6,7 @@ class MultiSet
   end
 
   def initialize(enum = [])
-    @hash = Hash.new { |hash, key| hash[key] = 0 }
+    @hash = Hash.new(0)
     merge(enum)
   end
 
@@ -25,7 +25,7 @@ class MultiSet
   end
 
   def to_s
-    # todo (or maybe not? Ruby's set class doesn't have it.)
+    recursive_to_a.to_s.gsub(/\[/, '{').gsub(/\]/, '}')
   end
 
   def add(elem)
@@ -33,12 +33,22 @@ class MultiSet
     self
   end
 
-  def flatten(flattened = self.class.new)
-    each_with_object(flattened) do |elem|
+  def delete(elem)
+    @hash[elem] -= 1
+    self
+  end
+
+  def delete_all(elem)
+    @hash[elem] = 0
+    self
+  end
+
+  def flatten(flat = self.class.new)
+    each_with_object(flat) do |elem|
       if elem.instance_of?(self.class)
-        elem.flatten(flattened)
+        elem.flatten(flat)
       else
-        flattened.add(elem)
+        flat.add(elem)
       end
     end
   end
@@ -144,14 +154,16 @@ class MultiSet
   def map
     return to_enum(&:map) unless block_given?
 
-    each_with_object(self.class.new) { |elem, new_set| new_set << yield(elem) }
+    each_with_object(self.class.new) do |elem, new_set|
+      new_set.add(yield(elem))
+    end
   end
 
   def select
     return to_enum(&:select) unless block_given?
 
     each_with_object(self.class.new) do |elem, new_set|
-      new_set << elem if yield(elem)
+      new_set.add(elem) if yield(elem)
     end
   end
 
@@ -173,6 +185,16 @@ class MultiSet
     return enum.each unless block_given?
     enum.each { |elem| yield elem }
   end
+
+  def recursive_to_a
+    each_with_object([]) do |elem, array|
+      if elem.instance_of?(self.class)
+        array << elem.recursive_to_a
+      else
+        array << elem
+      end
+    end
+  end
 end
 
 class Set < MultiSet
@@ -183,7 +205,7 @@ class Set < MultiSet
   def each
     return to_enum(&:each) unless block_given?
 
-    @hash.each_key { |elem| yield(elem) }
+    @hash.each { |elem, _| yield(elem) if self[elem] > 0 }
   end
 
   def subset?(other_set)
@@ -194,3 +216,12 @@ class Set < MultiSet
     end
   end
 end
+
+set1 = Set[1, 2, 3]
+set2 = Set[set1, 4, 5]
+set3 = Set[set2, 6, 7]
+set4 = Set[set3, 1]
+set5 = Set[set4, 4, set1]
+p set5.flatten # ?
+
+# expected = Set[1, 2, 3, 4, 5, 6, 7]

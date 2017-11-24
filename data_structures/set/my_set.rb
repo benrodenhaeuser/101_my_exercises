@@ -180,7 +180,7 @@ class MySet
         array << elem
       end
     end
-  endxw
+  end
 
   private
 

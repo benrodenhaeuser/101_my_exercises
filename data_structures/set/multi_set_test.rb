@@ -1,10 +1,7 @@
 require 'minitest/autorun'
 require_relative 'multi_set'
-require_relative 'my_set'
 
 class MultiSetTest < Minitest::Test
-
-  # basic setup
 
   def test_initialize_and_to_a
     multi_set = MultiSet[1, 2, 3, 3]
@@ -30,6 +27,18 @@ class MultiSetTest < Minitest::Test
     assert_equal(expected, multi_set.to_a)
   end
 
+  def test_delete_one_occurence
+    multi_set = MultiSet[1, 2, 3, 3]
+    multi_set.delete(3)
+    assert_equal(multi_set, MultiSet[1, 2, 3])
+  end
+
+  def test_delete_all
+    multi_set = MultiSet[1, 2, 3, 3]
+    multi_set.delete_all(3)
+    assert_equal(multi_set, MultiSet[1, 2])
+  end
+
   def test_flatten
     set1 = MultiSet[1, 2, 3]
     set2 = MultiSet[set1, 4, 5]
@@ -46,7 +55,25 @@ class MultiSetTest < Minitest::Test
     assert_equal(expected, set3.flatten.to_a)
   end
 
-  # operations with enum argument
+  def test_flatten_with_complicated_set
+    set1 = MultiSet[1, 2, 3]
+    set2 = MultiSet[set1, 4, 5]
+    set3 = MultiSet[set2, 6, 7]
+    set4 = MultiSet[set3, 1]
+    set5 = MultiSet[set4, 4, set1]
+    expected = MultiSet[1, 2, 3, 4, 5, 6, 7, 1, 4, 1, 2, 3]
+    assert_equal(expected, set5.flatten)
+  end
+
+  def test_to_s
+    set1 = MultiSet[1, 2, 3]
+    set2 = MultiSet[set1, 4, 5]
+    set3 = MultiSet[set2, 6, 7]
+    set4 = MultiSet[set3, 1]
+    set5 = MultiSet[set4, 4, set1]
+    expected = '{{{{{1, 2, 3}, 4, 5}, 6, 7}, 1}, 4, {1, 2, 3}}'
+    assert_equal(expected, set5.to_s)
+  end
 
   def test_sum!
     multi_set1 = MultiSet[1, 2, 3, 3]
@@ -103,8 +130,6 @@ class MultiSetTest < Minitest::Test
     assert_equal(expected, the_difference.to_a)
   end
 
-  # predicates with multiset argument
-
   def test_subset
     multi_set1 = MultiSet[1, 2, 3, 3]
     multi_set2 = MultiSet[1, 2, 3, 3, 4, 5]
@@ -154,8 +179,6 @@ class MultiSetTest < Minitest::Test
     assert(set3 == set4)
   end
 
-  # enum methods (each, select, map)
-
   def test_each_with_block
     multi_set = MultiSet[1, 2, 3, 3]
     array = []
@@ -168,22 +191,32 @@ class MultiSetTest < Minitest::Test
   end
 
   def test_map
-    # todo
+    set = MultiSet[0, 1, 2, 3, 4, 4]
+    mapped = set.map { |elem| elem * 2 }
+    assert_equal(MultiSet[0, 2, 4, 6, 8, 8], mapped)
   end
 
   def test_select
-    # todo
+    set = MultiSet[0, 1, 2, 3, 4, 4]
+    selected = set.select { |elem| elem.even? }
+    assert_equal(MultiSet[0, 2, 4, 4], selected)
   end
 end
 
-# todo: following tests might need to be adapted.
-
 class SetTest < Minitest::Test
+
   def test_elements_are_not_counted
     array = [1, 2, 3, 4, 4]
     set = Set[*array]
     expected = array.uniq
     assert_equal(expected, set.to_a)
+  end
+
+  def test_adding_element_already_present_does_not_affect_size
+    set = Set.new([0, 1, 2])
+    set.add(1)
+    assert_equal(3, set.size)
+    assert_equal([0, 1, 2], set.to_a)
   end
 
   def test_sum_is_union
@@ -192,13 +225,6 @@ class SetTest < Minitest::Test
     array1.sum!(array2)
     expected = [1, 2, 3]
     assert_equal(expected, array1.to_a)
-  end
-
-  def test_adding_element_already_present_does_not_affect_size
-    set = Set.new([0, 1, 2])
-    set.add(1)
-    assert_equal(3, set.size)
-    assert_equal([0, 1, 2], set.to_a)
   end
 
   def test_equality_is_order_independent
@@ -212,14 +238,11 @@ class SetTest < Minitest::Test
     set2 = Set.new([1, 2, 0])
     set3 = Set.new([set1, 1, 2])
     set4 = Set.new([1, set2, 2])
-    p set3
-    p set4
     assert(set1 == set2)
     assert(set3 == set4)
   end
 
   def test_to_s
-    skip
     set1 = Set[1, 2, 3]
     set2 = Set[set1, 4, 5]
     set3 = Set[set2, 6, 7]
@@ -230,37 +253,38 @@ class SetTest < Minitest::Test
   end
 
   def test_proper_superset_is_not_equal
-    skip
     set1 = Set.new([0, 1, 2])
     set2 = Set.new([0, 1, 2, 3])
     refute(set1 == set2)
   end
 
   def test_add_an_element
-    skip
     set1 = Set.new([0, 1, 2])
-    set1 << 3
+    set1.add(3)
     expected = Set.new([0, 1, 3, 2])
     assert_equal(expected, set1)
   end
 
   def test_delete_an_element
-    skip
     set1 = Set.new([0, 1, 2])
-    expected = Set.new([0, 1])
-    assert_equal(expected, set1.delete(2))
+    set1.delete(2)
+    assert_equal(Set[0, 1], set1)
+  end
+
+  def test_delete_all_is_like_delete_for_sets
+    set1 = Set.new([0, 1, 2, 2])
+    set1.delete_all(2)
+    assert_equal(Set[0, 1], set1)
   end
 
   def test_intersect
-    skip
     set1 = Set.new([1, 2, 3, 4, 5])
     set2 = Set.new([3, 4, 5, 6, 7])
     expected = Set.new([3, 4, 5])
-    assert_equal(expected, set1 & set2)
+    assert_equal(expected, set1.intersection(set2))
   end
 
   def test_subtract
-    skip
     set1 = Set.new([1, 2, 3])
     set2 = Set.new([2, 3])
     expected = [1]
@@ -269,7 +293,6 @@ class SetTest < Minitest::Test
   end
 
   def test_merge
-    skip
     set1 = Set.new([1, 2, 3])
     set2 = Set.new([4, 5, 6])
     set1.merge(set2)
@@ -278,31 +301,27 @@ class SetTest < Minitest::Test
   end
 
   def test_cannot_intersect_set_with_non_enum
-    skip
     set = Set.new
     assert_raises(ArgumentError) do
-      set & 1
+      set.intersection(1)
     end
   end
 
   def test_union
-    skip
     set1 = Set.new([1, 2, 3])
     set2 = Set.new([4, 5, 6])
     expected = Set.new([1, 2, 3, 4, 5, 6])
-    assert_equal(expected, set1 + set2)
+    assert_equal(expected, set1.union(set2))
   end
 
   def test_difference
-    skip
     set1 = Set.new([1, 2, 3])
     array = [1, 4]
     expected = Set.new([2, 3])
-    assert_equal(expected, set1 - array)
+    assert_equal(expected, set1.difference(array))
   end
 
   def test_each
-    skip
     set = Set.new([0, 1, 2, 3])
     elems = []
     set.each { |elem| elems << elem }
@@ -311,7 +330,6 @@ class SetTest < Minitest::Test
   end
 
   def test_select
-    skip
     set1 = Set.new([0, 1, 2, 3])
     set2 = set1.select { |elem| elem.odd? }
     expected = Set.new([1, 3])
@@ -319,15 +337,13 @@ class SetTest < Minitest::Test
   end
 
   def test_map
-    skip
     set1 = Set.new(['a', 'b', 'c', 'd'])
     set2 = set1.map { |elem| elem * 2 }
     expected = Set.new(['aa', 'bb', 'cc', 'dd'])
     assert_equal(expected, set2)
   end
 
-  def test_flatten_with_duplicates_in_nested_sets
-    skip
+  def test_flatten_with_complicated_set
     set1 = Set[1, 2, 3]
     set2 = Set[set1, 4, 5]
     set3 = Set[set2, 6, 7]
