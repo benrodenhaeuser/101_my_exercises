@@ -104,7 +104,6 @@ class MySet
 
   # Returns true if the set is a subset of the given set.
   def <=(other_set)
-    return true if equal?(other_set)
     return false unless other_set.instance_of?(self.class)
 
     all? do |elem|
@@ -112,7 +111,14 @@ class MySet
     end
   end
 
-  alias :subset :<=
+  alias :subset? :<=
+
+  def ==(other_set)
+    return false unless other_set.instance_of?(self.class)
+
+    return false unless size == other_set.size
+    self <= other_set
+  end
 
   # Returns true if the set is a superset of the given set.
   def >=(other_set)
@@ -123,7 +129,6 @@ class MySet
 
   # Returns true if the set is a proper subset of the given set.
   def <(other_set)
-    return false if equal?(other_set)
     return false unless other_set.instance_of?(self.class)
 
     return false if size == other_set.size
@@ -140,13 +145,6 @@ class MySet
   alias :proper_superset :>
 
   # Returns true if two sets are equal. The equality of each couple of elements is defined according to Object#eql?.
-  def ==(other_set)
-    return true if equal?(other_set)
-    return false unless other_set.instance_of?(self.class)
-
-    return false unless size == other_set.size
-    self <= other_set
-  end
 
   # Calls the given block once for each element in the set, passing the element as parameter. Returns an enumerator if no block is given.
   def each
@@ -182,7 +180,7 @@ class MySet
         array << elem
       end
     end
-  end
+  endxw
 
   private
 
