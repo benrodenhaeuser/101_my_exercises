@@ -216,12 +216,3 @@ class Set < MultiSet
     end
   end
 end
-
-set1 = Set[1, 2, 3]
-set2 = Set[set1, 4, 5]
-set3 = Set[set2, 6, 7]
-set4 = Set[set3, 1]
-set5 = Set[set4, 4, set1]
-p set5.flatten # ?
-
-# expected = Set[1, 2, 3, 4, 5, 6, 7]

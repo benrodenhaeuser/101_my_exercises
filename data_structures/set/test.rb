@@ -1,13 +1,17 @@
-expected_result = <<HEREDOC
-This would contain specially formatted text.
+# something
+class MyClass
+  include MyModule
 
-That might span many lines
- HEREDOC
+  def initialize
+    my_method
+  end
+end
 
-expected_result_2 = <<-INDENTED_HEREDOC
-This would contain specially formatted text.
+# some other thing
+module MyModule
+  def my_method
+    puts "I will return your call"
+  end
+end
 
-That might span many lines
-  INDENTED_HEREDOC
-
-puts expected_result == expected_result_2
+MyClass.new
