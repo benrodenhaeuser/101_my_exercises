@@ -14,6 +14,10 @@ class MultiSet
     @hash.values.sum
   end
 
+  def items
+    @hash.keys.select { |key| @hash[key] > 0 }
+  end
+
   def include?(elem)
     self[elem] > 0
   end
@@ -58,12 +62,12 @@ class MultiSet
   #
 
   def sum!(enum)
-    do_with_enum(enum) { |elem| @hash[elem] += 1}
+    do_with(enum) { |elem| add(elem) }
     self
   end
 
   def union!(enum)
-    do_with_enum(enum) do |elem|
+    do_with(enum) do |elem|
       self[elem] = [self[elem], enum.count(elem)].max
     end
     self
@@ -72,7 +76,7 @@ class MultiSet
   alias :merge :union!
 
   def difference!(enum)
-    do_with_enum(enum) do |elem|
+    do_with(enum) do |elem|
       self[elem] = [0, self[elem] - enum.count(elem)].max
     end
     self
@@ -95,7 +99,7 @@ class MultiSet
   end
 
   def intersection(enum)
-    do_with_enum(enum).with_object(self.class.new) do |elem, intersection|
+    do_with(enum).with_object(self.class.new) do |elem, intersection|
       intersection[elem] = [self[elem], enum.count(elem)].min
     end
   end
@@ -113,13 +117,13 @@ class MultiSet
     return false unless other_set.instance_of?(self.class)
 
     all? do |elem|
-      @hash[elem] <= other_set[elem]
+      self[elem] <= other_set[elem]
     end
   end
   alias <= subset?
 
   def proper_subset?(other_set)
-    subset?(other_set) && !(self == other_set)
+    subset?(other_set) && self != other_set
   end
   alias < subset?
 
@@ -129,7 +133,7 @@ class MultiSet
   alias >= superset?
 
   def proper_superset?(other_set)
-    superset?(other_set) && !(self == other_set)
+    superset?(other_set) && self != other_set
   end
   alias > superset?
 
@@ -143,7 +147,7 @@ class MultiSet
   end
 
   #
-  # enum operations
+  # enum operations (abstract away the hash)
   #
 
   def each
@@ -177,7 +181,9 @@ class MultiSet
     @hash[elem] = count
   end
 
-  def do_with_enum(enum)
+  def do_with(enum)
+    # todo: kind_of?(Enumerable)
+
     raise ArgumentError unless enum.respond_to?(:each)
     raise ArgumentError unless enum.each.instance_of?(Enumerator)
     raise ArgumentError unless enum.respond_to?(:count)

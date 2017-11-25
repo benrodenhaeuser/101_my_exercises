@@ -1,22 +1,16 @@
-## Sets
 
-- intersect? (intersection non-empty)
-- disjoint?
-- class method [](ary) to make a new set
-- flatten (recursively flatten containing sets) – what if the set contains something other than a set?
-- subtract
-- select!
-- map!
+## size
 
-## Multisets
+- if we keep track of the size ourselves, we can compute it faster.
+- however, this requires keeping track of the size whenever it changes.
 
-### what is different about multisets?
+## { 'a' => 0 }
 
-- memberhood is tracked differently
-- intersection and union work differently
-- equality and subset will also need different definitions
-- each is also different, as it will have to yield elements several times (if they are in multiset several times)
+- is it wise to keep "0-elements" in our hash? or should we "clean" the hash to throw out 0 elements? what is wrong with the 0 elements? as long as users of our class don't have to worry about them, things should be fine, right? but are we sure that they don't have to worry about them?
+- a more sophisticated delete method would be a first step!
 
-### what is common?
+## count
 
-- select, map
+- it would be better not to work with `self[elem]`, as this is hash notation, not set notation.
+- Instead, we should work with count(elem) for a given elem.
+- the count method should also give the size if no argument is given, to be consistent with Enumerable#count

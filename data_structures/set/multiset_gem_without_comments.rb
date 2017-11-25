@@ -8,9 +8,8 @@ class Multiset
 
   include Enumerable
 
-
   def initialize(list = nil)
-    @entries = {}
+    @entries = {} # hash
     if list.kind_of?(Enumerable)
       list.each{ |item| add item }
     elsif list != nil
@@ -62,7 +61,6 @@ class Multiset
     @entries.dup
   end
 
-
   def to_set
     require "set"
     Set.new(@entries.keys)
@@ -91,7 +89,6 @@ class Multiset
       false
     end
   end
-
 
   def replace(other)
     @entries.clear
@@ -160,7 +157,6 @@ class Multiset
     buf
   end
 
-
   def count(*item_list)
     if block_given?
       unless item_list.empty?
@@ -215,7 +211,6 @@ class Multiset
     self
   end
 
-
   def compare_set_with(other) # :nodoc: :yields: number_in_self, number_in_other
     (self.items | other.items).each do |item|
       return false unless yield(self.count(item), other.count(item))
@@ -255,7 +250,6 @@ class Multiset
     return false unless other.instance_of?(Multiset)
     compare_set_with(other){ |s, o| s == o }
   end
-
 
   def merge(other)
     ret = self.dup
@@ -304,7 +298,6 @@ class Multiset
     end
     ret
   end
-
 
   def each
     if block_given?
