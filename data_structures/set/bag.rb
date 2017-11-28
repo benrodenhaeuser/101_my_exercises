@@ -1,4 +1,4 @@
-class MultiSet
+class Bag
   include Enumerable
 
   def self.[](*enum)
@@ -182,11 +182,9 @@ class MultiSet
   end
 
   def do_with(enum)
-    # todo: kind_of?(Enumerable)
-
     raise ArgumentError unless enum.respond_to?(:each)
-    raise ArgumentError unless enum.each.instance_of?(Enumerator)
     raise ArgumentError unless enum.respond_to?(:count)
+    raise ArgumentError unless enum.each.instance_of?(Enumerator)
 
     return enum.each unless block_given?
     enum.each { |elem| yield elem }
@@ -203,7 +201,7 @@ class MultiSet
   end
 end
 
-class Set < MultiSet
+class Set < Bag
   def size
     @hash.keys.count
   end

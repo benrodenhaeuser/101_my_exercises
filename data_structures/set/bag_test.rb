@@ -1,205 +1,205 @@
 require 'minitest/autorun'
-require_relative 'multi_set'
+require_relative 'bag'
 
-class MultiSetTest < Minitest::Test
+class BagTest < Minitest::Test
 
   def test_initialize_and_to_a
-    multi_set = MultiSet[1, 2, 3, 3]
+    multi_set = Bag[1, 2, 3, 3]
     expected = [1, 2, 3, 3]
     assert_equal(expected, multi_set.to_a)
   end
 
   def test_size
-    multi_set = MultiSet[1, 2, 3, 3]
+    multi_set = Bag[1, 2, 3, 3]
     expected = 4
     assert_equal(expected, multi_set.size)
   end
 
   def test_include
-    multi_set = MultiSet[1, 2, 3, 4]
+    multi_set = Bag[1, 2, 3, 4]
     assert_includes(multi_set, 2)
   end
 
   def test_add_element
-    multi_set = MultiSet[1, 2, 3, 3]
+    multi_set = Bag[1, 2, 3, 3]
     multi_set.add(5)
     expected = [1, 2, 3, 3, 5]
     assert_equal(expected, multi_set.to_a)
   end
 
   def test_delete_one_occurence
-    multi_set = MultiSet[1, 2, 3, 3]
+    multi_set = Bag[1, 2, 3, 3]
     multi_set.delete(3)
-    assert_equal(multi_set, MultiSet[1, 2, 3])
+    assert_equal(multi_set, Bag[1, 2, 3])
   end
 
   def test_delete_all
-    multi_set = MultiSet[1, 2, 3, 3]
+    multi_set = Bag[1, 2, 3, 3]
     multi_set.delete_all(3)
-    assert_equal(multi_set, MultiSet[1, 2])
+    assert_equal(multi_set, Bag[1, 2])
   end
 
   def test_flatten
-    set1 = MultiSet[1, 2, 3]
-    set2 = MultiSet[set1, 4, 5]
-    set3 = MultiSet[set2, 6, 7]
+    set1 = Bag[1, 2, 3]
+    set2 = Bag[set1, 4, 5]
+    set3 = Bag[set2, 6, 7]
     expected = [1, 2, 3, 4, 5, 6, 7]
     assert_equal(expected, set3.flatten.to_a)
   end
 
   def test_flatten_with_elements_appearing_multiple_times
-    set1 = MultiSet[1, 2, 3, 3]
-    set2 = MultiSet[set1, 4, 5]
-    set3 = MultiSet[set2, 6, 6, 7]
+    set1 = Bag[1, 2, 3, 3]
+    set2 = Bag[set1, 4, 5]
+    set3 = Bag[set2, 6, 6, 7]
     expected = [1, 2, 3, 3, 4, 5, 6, 6, 7]
     assert_equal(expected, set3.flatten.to_a)
   end
 
   def test_flatten_with_complicated_set
-    set1 = MultiSet[1, 2, 3]
-    set2 = MultiSet[set1, 4, 5]
-    set3 = MultiSet[set2, 6, 7]
-    set4 = MultiSet[set3, 1]
-    set5 = MultiSet[set4, 4, set1]
-    expected = MultiSet[1, 2, 3, 4, 5, 6, 7, 1, 4, 1, 2, 3]
+    set1 = Bag[1, 2, 3]
+    set2 = Bag[set1, 4, 5]
+    set3 = Bag[set2, 6, 7]
+    set4 = Bag[set3, 1]
+    set5 = Bag[set4, 4, set1]
+    expected = Bag[1, 2, 3, 4, 5, 6, 7, 1, 4, 1, 2, 3]
     assert_equal(expected, set5.flatten)
   end
 
   def test_to_s
-    set1 = MultiSet[1, 2, 3]
-    set2 = MultiSet[set1, 4, 5]
-    set3 = MultiSet[set2, 6, 7]
-    set4 = MultiSet[set3, 1]
-    set5 = MultiSet[set4, 4, set1]
+    set1 = Bag[1, 2, 3]
+    set2 = Bag[set1, 4, 5]
+    set3 = Bag[set2, 6, 7]
+    set4 = Bag[set3, 1]
+    set5 = Bag[set4, 4, set1]
     expected = '{{{{{1, 2, 3}, 4, 5}, 6, 7}, 1}, 4, {1, 2, 3}}'
     assert_equal(expected, set5.to_s)
   end
 
   def test_sum!
-    multi_set1 = MultiSet[1, 2, 3, 3]
-    multi_set2 = MultiSet[2, 4]
+    multi_set1 = Bag[1, 2, 3, 3]
+    multi_set2 = Bag[2, 4]
     multi_set1.sum!(multi_set2)
     expected = [1, 2, 2, 3, 3, 4]
     assert_equal(expected, multi_set1.to_a)
   end
 
   def test_union!
-    multi_set1 = MultiSet[1, 2, 3, 3]
-    multi_set2 = MultiSet[2, 4]
+    multi_set1 = Bag[1, 2, 3, 3]
+    multi_set2 = Bag[2, 4]
     multi_set1.union!(multi_set2)
     expected = [1, 2, 3, 3, 4]
     assert_equal(expected, multi_set1.to_a)
   end
 
   def test_difference!
-    multi_set1 = MultiSet[1, 2, 3, 3]
-    multi_set2 = MultiSet[3, 3, 3]
+    multi_set1 = Bag[1, 2, 3, 3]
+    multi_set2 = Bag[3, 3, 3]
     expected = [1, 2]
     assert_equal(expected, (multi_set1.difference(multi_set2)).to_a)
   end
 
   def test_sum
-    multi_set1 = MultiSet[1, 2, 3, 3]
-    multi_set2 = MultiSet[2, 4]
+    multi_set1 = Bag[1, 2, 3, 3]
+    multi_set2 = Bag[2, 4]
     summed_set = multi_set1.sum(multi_set2)
     expected = [1, 2, 2, 3, 3, 4]
     assert_equal(expected, summed_set.to_a)
   end
 
   def test_union
-    multi_set1 = MultiSet[1, 2, 3, 3]
-    multi_set2 = MultiSet[2, 4]
+    multi_set1 = Bag[1, 2, 3, 3]
+    multi_set2 = Bag[2, 4]
     the_union = multi_set1.union(multi_set2)
     expected = [1, 2, 3, 3, 4]
     assert_equal(expected, the_union.to_a)
   end
 
   def test_intersection
-    multi_set1 = MultiSet[1, 2, 3, 3]
-    multi_set2 = MultiSet[2, 4, 3, 3, 3]
+    multi_set1 = Bag[1, 2, 3, 3]
+    multi_set2 = Bag[2, 4, 3, 3, 3]
     the_intersection = multi_set1.intersection(multi_set2)
     expected = [2, 3, 3]
     assert_equal(expected, the_intersection.to_a)
   end
 
   def test_difference
-    multi_set1 = MultiSet[1, 2, 3, 3]
-    multi_set2 = MultiSet[3, 3, 3]
+    multi_set1 = Bag[1, 2, 3, 3]
+    multi_set2 = Bag[3, 3, 3]
     the_difference = multi_set1.difference(multi_set2)
     expected = [1, 2]
     assert_equal(expected, the_difference.to_a)
   end
 
   def test_subset
-    multi_set1 = MultiSet[1, 2, 3, 3]
-    multi_set2 = MultiSet[1, 2, 3, 3, 4, 5]
-    multi_set3 = MultiSet[1, 2, 3]
+    multi_set1 = Bag[1, 2, 3, 3]
+    multi_set2 = Bag[1, 2, 3, 3, 4, 5]
+    multi_set3 = Bag[1, 2, 3]
     assert(multi_set1.subset?(multi_set2))
     refute(multi_set1.subset?(multi_set3))
   end
 
   def test_proper_subset
-    multi_set1 = MultiSet[1, 2, 3, 3]
-    multi_set2 = MultiSet[1, 2, 3, 3, 4, 5]
-    multi_set3 = MultiSet[1, 2, 3]
+    multi_set1 = Bag[1, 2, 3, 3]
+    multi_set2 = Bag[1, 2, 3, 3, 4, 5]
+    multi_set3 = Bag[1, 2, 3]
     assert(multi_set1.proper_subset?(multi_set2))
     refute(multi_set1.proper_subset?(multi_set3))
   end
 
   def test_superset
-    multi_set1 = MultiSet[1, 2, 3, 3]
-    multi_set2 = MultiSet[1, 2, 3, 3, 4, 5]
-    multi_set3 = MultiSet[1, 2, 3]
+    multi_set1 = Bag[1, 2, 3, 3]
+    multi_set2 = Bag[1, 2, 3, 3, 4, 5]
+    multi_set3 = Bag[1, 2, 3]
     assert(multi_set2.superset?(multi_set1))
     refute(multi_set3.superset?(multi_set1))
   end
 
   def test_proper_superset
-    multi_set1 = MultiSet[1, 2, 3, 3]
-    multi_set2 = MultiSet[1, 2, 3, 3, 4, 5]
-    multi_set3 = MultiSet[1, 2, 3]
+    multi_set1 = Bag[1, 2, 3, 3]
+    multi_set2 = Bag[1, 2, 3, 3, 4, 5]
+    multi_set3 = Bag[1, 2, 3]
     assert(multi_set2.proper_superset?(multi_set1))
     refute(multi_set3.proper_superset?(multi_set3))
   end
 
   def test_equality
-    multi_set1 = MultiSet[1, 2, 3, 3]
-    multi_set2 = MultiSet[1, 2, 3, 3]
-    multi_set3 = MultiSet[1, 2, 3]
+    multi_set1 = Bag[1, 2, 3, 3]
+    multi_set2 = Bag[1, 2, 3, 3]
+    multi_set3 = Bag[1, 2, 3]
     assert(multi_set1 == multi_set2)
     refute(multi_set1 == multi_set3)
   end
 
-  def test_equality_with_nested_sets_for_multisets
-    set1 = MultiSet.new([0, 1, 2])
-    set2 = MultiSet.new([1, 2, 0])
-    set3 = MultiSet.new([set1, 1, 2])
-    set4 = MultiSet.new([set2, 1, 2])
+  def test_equality_with_nested_sets_for_Bags
+    set1 = Bag.new([0, 1, 2])
+    set2 = Bag.new([1, 2, 0])
+    set3 = Bag.new([set1, 1, 2])
+    set4 = Bag.new([set2, 1, 2])
     assert(set1 == set2)
     assert(set3 == set4)
   end
 
   def test_each_with_block
-    multi_set = MultiSet[1, 2, 3, 3]
+    multi_set = Bag[1, 2, 3, 3]
     array = []
     multi_set.each { |elem| array << elem }
     assert_equal(array, [1, 2, 3, 3])
   end
 
   def test_each_without_block
-    MultiSet.new.each.instance_of?(Enumerator)
+    Bag.new.each.instance_of?(Enumerator)
   end
 
   def test_map
-    set = MultiSet[0, 1, 2, 3, 4, 4]
+    set = Bag[0, 1, 2, 3, 4, 4]
     mapped = set.map { |elem| elem * 2 }
-    assert_equal(MultiSet[0, 2, 4, 6, 8, 8], mapped)
+    assert_equal(Bag[0, 2, 4, 6, 8, 8], mapped)
   end
 
   def test_select
-    set = MultiSet[0, 1, 2, 3, 4, 4]
+    set = Bag[0, 1, 2, 3, 4, 4]
     selected = set.select { |elem| elem.even? }
-    assert_equal(MultiSet[0, 2, 4, 4], selected)
+    assert_equal(Bag[0, 2, 4, 4], selected)
   end
 end
 
