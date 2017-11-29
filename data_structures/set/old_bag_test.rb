@@ -138,6 +138,13 @@ class BagTest < Minitest::Test
     refute(multi_set1.subset?(multi_set3))
   end
 
+  def test_subset_with_enum
+    skip
+    multi_set = Bag[1, 2, 3, 3]
+    array = [1, 2, 3]
+    assert(multi_set.subset?(array))
+  end
+
   def test_proper_subset
     multi_set1 = Bag[1, 2, 3, 3]
     multi_set2 = Bag[1, 2, 3, 3, 4, 5]
