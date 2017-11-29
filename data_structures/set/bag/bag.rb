@@ -10,33 +10,25 @@ class Bag
     merge(enum)
   end
 
+  def count(elem = nil)
+    elem ? indicator(elem) : size
+  end
+
+  def indicator(elem)
+    @hash[elem]
+  end
+
   def each
     return to_enum(&:each) unless block_given?
-    @hash.each { |elem, count| count.times { yield(elem) } }
-  end
-
-  def count(item = nil)
-    item ? each.count(item) : size
-  end
-
-  def include?(elem)
-    count(elem) > 0
+    @hash.each_key { |elem| count(elem).times { yield(elem) } }
   end
 
   def size
     each.count
   end
 
-  def to_a
-    each.to_a
-  end
-
-  def to_s
-    recursive_to_a.to_s.tr('[]', '{}')
-  end
-
-  def inspect
-    "#<Bag: #{to_s}>"
+  def include?(elem)
+    count(elem) > 0
   end
 
   def add(elem)
@@ -54,6 +46,18 @@ class Bag
     self
   end
 
+  def to_a
+    each.to_a
+  end
+
+  def to_s
+    recursive_to_a.to_s.tr('[]', '{}')
+  end
+
+  def inspect
+    "#<#{self.class}: #{to_s}>"
+  end
+
   def flatten(flat = self.class.new)
     each_with_object(flat) do |elem|
       if elem.instance_of?(self.class)
@@ -63,10 +67,6 @@ class Bag
       end
     end
   end
-
-  #
-  # operations with enums: destructive
-  #
 
   def sum!(enum)
     do_with(enum) { |elem| add(elem) }
@@ -89,23 +89,16 @@ class Bag
   end
   alias subtract difference!
 
-  #
-  # operations with enums: non-destructive
-  #
-
   def sum(enum)
-    the_sum = dup
-    the_sum.sum!(enum)
+    dup.sum!(enum)
   end
 
   def union(enum)
-    the_union = dup
-    the_union.union!(enum)
+    dup.union!(enum)
   end
 
   def difference(enum)
-    the_difference = dup
-    the_difference.difference!(enum)
+    dup.difference!(enum)
   end
 
   def intersection(enum)
@@ -113,10 +106,6 @@ class Bag
       intersection[elem] = [count(elem), enum.count(elem)].min
     end
   end
-
-  #
-  # predicates (with other set)
-  #
 
   def subset?(other_set)
     return false unless other_set.instance_of?(self.class)
@@ -185,13 +174,7 @@ class Bag
 end
 
 class Set < Bag
-  def each
-    return to_enum(&:each) unless block_given?
-
-    @hash.each_key { |elem| yield(elem) if @hash[elem] > 0 }
-  end
-
-  def inspect
-    "#<Set: #{to_s}>"
+  def indicator(elem)
+    @hash[elem] > 0 ? 1 : 0
   end
 end
