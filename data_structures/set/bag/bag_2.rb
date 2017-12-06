@@ -1,26 +1,14 @@
-class Bag
+module SetLike # Countable?
+  # requirements: each, indicator, add, delete
+  # interfaces with enum
+
+  # however, our methods below really require a `renew_count` method (i.e., "set the indicator for elem to x", an indicator setter)
+  # maybe we should also count delete among the core methods
+
   include Enumerable
-
-  def self.[](*enum)
-    new(enum)
-  end
-
-  def initialize(enum = [])
-    @hash = Hash.new(0)
-    sum(enum)
-  end
-
-  def indicator(elem)
-    @hash[elem]
-  end
 
   def count(elem = nil)
     elem ? indicator(elem) : size
-  end
-
-  def each
-    return to_enum(&:each) unless block_given?
-    @hash.each_key { |elem| count(elem).times { yield(elem) } }
   end
 
   def include?(elem)
@@ -29,21 +17,6 @@ class Bag
 
   def size
     each.count
-  end
-
-  def add(elem)
-    @hash[elem] += 1
-    self
-  end
-
-  def delete(elem)
-    @hash[elem] = [count(elem) - 1, 0].max
-    self
-  end
-
-  def delete_all(elem)
-    @hash[elem] = 0
-    self
   end
 
   def to_a
@@ -175,6 +148,39 @@ class Bag
           elem
         end
     end
+  end
+end
+
+class Bag
+  include SetLike
+
+  def self.[](*enum)
+    new(enum)
+  end
+
+  def initialize(enum = [])
+    raise ArgumentError unless enum.respond_to?(:each)
+    @hash = Hash.new(0)
+    enum.each { |elem| @hash[elem] += 1} # maybe better extract to `merge`
+  end
+
+  def indicator(elem)
+    @hash[elem]
+  end
+
+  def add(elem)
+    @hash[elem] += 1
+    self
+  end
+
+  def delete(elem)
+    @hash[elem] = [indicator(elem) - 1, 0].max
+    self
+  end
+
+  def each
+    return to_enum(&:each) unless block_given?
+    @hash.each_key { |elem| count(elem).times { yield(elem) } }
   end
 end
 
