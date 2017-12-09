@@ -1,14 +1,12 @@
-# Using an array instead of a hash for sets of numbers works using our approach, but the fact that there are no default values for arrays is problematic.
-
 class NumericArray
   def initialize
     @array = Array.new
   end
 
   def [](key)
-    @array[key]
+    @array[key] ? @array[key] : 0
   end
-  alias indicator []
+  alias retrieve []
 
   def []=(key, value)
     @array[key] = value
@@ -17,8 +15,8 @@ class NumericArray
   def each_pair
     return to_enum(:each_pair) unless block_given?
 
-    @array.each do |key|
-      yield([key, @array[key]]) if @array[key] > 0
+    @array.each_index do |key|
+      yield([key, self[key]]) if self[key] > 0
     end
 
     self
@@ -26,7 +24,7 @@ class NumericArray
   alias each each_pair
 end
 
-
+# represents sets of numbers
 class NumericClassicalSet < NumericArray
   include SetLike
 
@@ -38,14 +36,6 @@ class NumericClassicalSet < NumericArray
 
   def add(key)
     self[key] = 1
-    # HACK:
-    @array.map! do |elem|
-      if elem.nil?
-        0
-      else
-        elem
-      end
-    end
   end
 
   def delete(key)

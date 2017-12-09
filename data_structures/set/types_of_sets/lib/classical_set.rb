@@ -1,26 +1,25 @@
-require_relative 'numeric_map'
-require_relative 'set_like'
+require_relative 'generic_set'
 
-class ClassicalSet < NumericMap
-  include SetLike
-
+class ClassicalSet < GenericSet
   def initialize(enum = [])
     raise ArgumentError unless enum.respond_to?(:each)
     super()
     enum.each { |key| add(key) }
   end
 
-  def add(key, value = 1)
+  def add(key, _ = 1)
     self[key] = 1
   end
 
-  def delete(key, value = 1)
+  def delete(key, _ = 1)
     self[key] = 0
   end
 
   def valid_value?(val)
     [0, 1].include?(val)
   end
+
+  # custom methods for this set type
 
   def each_elem
     return to_enum(:each_elem) unless block_given?

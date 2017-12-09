@@ -1,6 +1,4 @@
-class FuzzySet < NumericMap
-  include SetLike
-
+class FuzzySet < GenericSet
   def initialize(hsh = {})
     raise ArgumentError unless valid_hash?(hsh)
     super()

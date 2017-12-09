@@ -1,33 +1,7 @@
+# requires client to implement
+# :add, :delete, :retrieve, :each
 module SetLike
-  # requires client to implement
-  # :[], :[]=, :each
-
-  # todo: perhaps replace :[]= with :add and :delete (?)
-  # i.e.:
-  # :score, :add, :delete, :each
-  # perhaps multiplicity?
-  # is there a better (shorter) name for indicator? score, perhaps?
-  # this makes sense insofar as a set is characterized by indicator, add and delete
-  # we could then define the setter in terms of :indicator, :add and :delete, as follows:
-  #
-  # def update(key, value)
-  #   delete(key, indicator(key))
-  #   add(key, value)
-  # end
-
-  # update is like renew_count that is used in multiset gem.
-
-  # however, there is a danger of circularity, because in our case, the client class also defines []=, and uses it to define add, delete etc.
-
-  # so perhaps, what we should simply do is use different notation?
-
-  # if we do this, we would not have to change so much, actually.
-  # but we would make the SetLike class more independent of the underlying NumericMap.
-  # because the way it is implemented right now, SetLike depends on both NumericMap and Fuzzy Set.
-
   include Enumerable
-
-  # "basics"
 
   def keys
     each.map(&:first)
@@ -45,8 +19,13 @@ module SetLike
     keys.include?(elem)
   end
 
+  def update(key, value)
+    delete(key, retrieve(key))
+    add(key, value) if value > 0
+  end
+
   def remove(key)
-    self[key] = 0
+    update(key, 0)
   end
 
   def to_s
@@ -59,11 +38,11 @@ module SetLike
   end
 
   def flatten(flat = self.class.new)
-    each.with_object(flat) do |(key, value), _|
+    each.with_object(flat) do |(key, val), _|
       if key.instance_of?(self.class)
         key.flatten(flat)
       else
-        flat.add(key, value)
+        flat.add(key, val)
       end
     end
   end
@@ -82,7 +61,10 @@ module SetLike
 
   def union!(other)
     do_with(other) do |key, _|
-      self[key] = [self[key], other[key]].max
+      update(
+        key,
+        [retrieve(key), other.retrieve(key)].max
+      )
     end
     self
   end
@@ -94,7 +76,10 @@ module SetLike
 
   def difference!(other)
     do_with(other) do |key, _|
-      self[key] = [0, self[key] - other[key]].max
+      update(
+        key,
+        [0, retrieve(key) - other.retrieve(key)].max
+      )
     end
     self
   end
@@ -106,13 +91,20 @@ module SetLike
 
   def intersection!(other)
     each do |key, _|
-      self[key] = intersection(other)[key]
+      update(
+        key,
+        intersection(other).retrieve(key)
+      )
     end
   end
 
+  # todo: this really needs to be done some other way.
   def intersection(other)
     do_with(other).with_object(self.class.new) do |(key, _), the_intersection|
-      the_intersection[key] = [indicator(key), other.indicator(key)].min
+      the_intersection.update(
+        key,
+        [retrieve(key), other.retrieve(key)].min
+      )
     end
   end
   alias & intersection
@@ -131,7 +123,7 @@ module SetLike
     return false unless other.instance_of?(self.class)
 
     all? do |key, _|
-      self[key] <= other[key]
+      retrieve(key) <= other.retrieve(key)
     end
   end
   alias <= subset?

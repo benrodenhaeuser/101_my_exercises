@@ -1,6 +1,4 @@
-class MultiSet < NumericMap
-  include SetLike
-
+class MultiSet < GenericSet
   def initialize(input = {})
     raise ArgumentError unless input.respond_to?(:each)
     super()
@@ -12,12 +10,12 @@ class MultiSet < NumericMap
     end
   end
 
-  def add(key, value = 1)
-    self[key] += value
+  def add(key, val = 1)
+    self[key] += val
   end
 
-  def delete(key, value = 1)
-    self[key] = [self[key] - value, 0].max
+  def delete(key, val = 1)
+    self[key] = [self[key] - val, 0].max
   end
 
   def valid_hash?(hsh)

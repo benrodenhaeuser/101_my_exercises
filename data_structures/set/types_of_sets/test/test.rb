@@ -1,20 +1,14 @@
 require 'minitest/autorun'
-require_relative '../lib/set_like'
 require_relative '../lib/numeric_map'
+require_relative '../lib/set_like'
+require_relative '../lib/generic_set'
 require_relative '../lib/multi_set'
 require_relative '../lib/classical_set'
 require_relative '../lib/fuzzy_set'
 require_relative '../lib/numeric_array'
 
 class NumericMapTest < Minitest::Test
-  def test_element_getter_and_setter
-    # skip
-    map = NumericMap.new
-    map[3] = 4
-    actual = map[3]
-    expected = 4
-    assert_equal(expected, actual)
-  end
+  
 end
 
 class ClassicalSetTest < Minitest::Test
@@ -104,7 +98,9 @@ class ClassicalSetTest < Minitest::Test
     # skip
     set1 = ClassicalSet.new([0, 1, 2, 2])
     set1.remove(2)
-    assert_equal(ClassicalSet.new([0, 1]), set1)
+    actual = set1
+    expected = ClassicalSet.new([0, 1])
+    assert_equal(expected, actual)
   end
 
   def test_intersection
@@ -410,7 +406,7 @@ class MultiSetTest < Minitest::Test
     # skip
     set = MultiSet.new([1, 2, 3, 3])
     set.delete(3)
-    assert_equal(set.indicator(3), 1)
+    assert_equal(set.retrieve(3), 1)
   end
 
   def test_negative_elem_counts_do_not_occur
@@ -419,7 +415,7 @@ class MultiSetTest < Minitest::Test
     set.delete(1)
     set.delete(1)
     expected = 0
-    assert_equal(0, set.indicator(1))
+    assert_equal(0, set.retrieve(1))
   end
 
   def test_destructive_intersection

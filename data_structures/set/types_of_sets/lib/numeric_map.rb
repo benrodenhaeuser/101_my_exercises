@@ -7,11 +7,12 @@ class NumericMap
     raise ArgumentError unless valid_value?(val)
     @hash[key] = val
   end
+  private :[]=
 
   def [](key)
     @hash[key]
   end
-  alias indicator []
+  alias retrieve []
 
   def each_pair
     return to_enum(:each_pair) unless block_given?
