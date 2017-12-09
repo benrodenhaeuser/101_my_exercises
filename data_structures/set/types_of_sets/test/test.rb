@@ -1,14 +1,16 @@
+require 'simplecov'
+SimpleCov.start
+
 require 'minitest/autorun'
 require_relative '../lib/numeric_map'
 require_relative '../lib/set_like'
-require_relative '../lib/generic_set'
 require_relative '../lib/multi_set'
 require_relative '../lib/classical_set'
 require_relative '../lib/fuzzy_set'
 require_relative '../lib/numeric_array'
 
 class NumericMapTest < Minitest::Test
-  
+
 end
 
 class ClassicalSetTest < Minitest::Test
