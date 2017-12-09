@@ -3,6 +3,8 @@
 module SetLike
   include Enumerable
 
+  # preliminaries
+
   def keys
     each.map(&:first)
   end
@@ -57,7 +59,7 @@ module SetLike
     duplicate
   end
 
-  # operations with other set
+  # operations with other
 
   def union!(other)
     do_with(other) do |key, _|
@@ -117,7 +119,7 @@ module SetLike
   end
   private :do_with
 
-  # inclusion and equivalence
+  # comparison with other
 
   def subset?(other)
     return false unless other.instance_of?(self.class)

@@ -1,4 +1,6 @@
-class MultiSet < GenericSet
+class MultiSet < NumericMap
+  include SetLike
+  
   def initialize(input = {})
     raise ArgumentError unless input.respond_to?(:each)
     super()
@@ -10,6 +12,13 @@ class MultiSet < GenericSet
     end
   end
 
+  def valid_hash?(hsh)
+    hsh.values.all? do |val|
+      valid_value?(val)
+    end
+  end
+  private :valid_hash?
+
   def add(key, val = 1)
     self[key] += val
   end
@@ -18,17 +27,11 @@ class MultiSet < GenericSet
     self[key] = [self[key] - val, 0].max
   end
 
-  def valid_hash?(hsh)
-    hsh.values.all? do |val|
-      valid_value?(val)
-    end
-  end
-
   def valid_value?(val)
     val.is_a?(Integer) && val >= 0
   end
 
-  # custom methods for this set type
+  # (custom methods for this set type)
 
   def sum!(other)
     do_with(other) { |key, val| self[key] += val }

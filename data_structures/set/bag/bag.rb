@@ -50,6 +50,7 @@ class Bag
     each.to_a
   end
 
+  # this is unncesseary insofar as we can just call to_s on the members of the set
   def to_s
     recursive_to_a.to_s.tr('[]', '{}')
   end

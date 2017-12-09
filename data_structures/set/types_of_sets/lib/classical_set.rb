@@ -1,6 +1,6 @@
-require_relative 'generic_set'
+class ClassicalSet < NumericMap
+  include SetLike
 
-class ClassicalSet < GenericSet
   def initialize(enum = [])
     raise ArgumentError unless enum.respond_to?(:each)
     super()
@@ -19,7 +19,7 @@ class ClassicalSet < GenericSet
     [0, 1].include?(val)
   end
 
-  # custom methods for this set type
+  # (custom methods for this set type)
 
   def each_elem
     return to_enum(:each_elem) unless block_given?

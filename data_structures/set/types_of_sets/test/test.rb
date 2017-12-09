@@ -2,12 +2,12 @@ require 'simplecov'
 SimpleCov.start
 
 require 'minitest/autorun'
+
 require_relative '../lib/numeric_map'
 require_relative '../lib/set_like'
 require_relative '../lib/multi_set'
 require_relative '../lib/classical_set'
 require_relative '../lib/fuzzy_set'
-require_relative '../lib/numeric_array'
 
 class NumericMapTest < Minitest::Test
 
@@ -481,13 +481,5 @@ class FuzzySetTest < Minitest::Test
     assert_raises ArgumentError do
       set = FuzzySet.new(1 => 10)
     end
-  end
-end
-
-class NumericClassicalSetTest < Minitest::Test
-  def test_something
-    set1 = NumericClassicalSet.new([1, 2, 3])
-    set2 = NumericClassicalSet.new([1, 2, 3, 4])
-    assert(set1.subset?(set2))
   end
 end

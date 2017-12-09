@@ -1,3 +1,6 @@
+# to demonstrate that the code works with internal storage container other than hash. below, we use an array to represent a set of numbers.
+
+# sets up the internal storage for NumericClassicalSet below.
 class NumericArray
   def initialize
     @array = Array.new
@@ -34,11 +37,11 @@ class NumericClassicalSet < NumericArray
     enum.each { |key| add(key) }
   end
 
-  def add(key)
+  def add(key, _ = 1)
     self[key] = 1
   end
 
-  def delete(key)
+  def delete(key, _ = 1)
     self[key] = 0
   end
 

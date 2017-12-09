@@ -1,6 +1,6 @@
 class NumericMap
   def initialize
-    @hash = Hash.new(0)
+    @hash = Hash.new
   end
 
   def []=(key, val)
@@ -10,7 +10,7 @@ class NumericMap
   private :[]=
 
   def [](key)
-    @hash[key]
+    @hash[key] ? @hash[key] : 0
   end
   alias retrieve []
 
