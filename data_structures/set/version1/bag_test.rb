@@ -130,7 +130,7 @@ class BagTest < Minitest::Test
     assert_equal(expected, the_difference.to_a)
   end
 
-  def test_subset
+  def test_sub
     multi_set1 = Bag[1, 2, 3, 3]
     multi_set2 = Bag[1, 2, 3, 3, 4, 5]
     multi_set3 = Bag[1, 2, 3]
@@ -138,14 +138,7 @@ class BagTest < Minitest::Test
     refute(multi_set1.subset?(multi_set3))
   end
 
-  def test_subset_with_enum
-    skip
-    multi_set = Bag[1, 2, 3, 3]
-    array = [1, 2, 3]
-    assert(multi_set.subset?(array))
-  end
-
-  def test_proper_subset
+  def test_proper_sub
     multi_set1 = Bag[1, 2, 3, 3]
     multi_set2 = Bag[1, 2, 3, 3, 4, 5]
     multi_set3 = Bag[1, 2, 3]
@@ -153,7 +146,7 @@ class BagTest < Minitest::Test
     refute(multi_set1.proper_subset?(multi_set3))
   end
 
-  def test_superset
+  def test_super
     multi_set1 = Bag[1, 2, 3, 3]
     multi_set2 = Bag[1, 2, 3, 3, 4, 5]
     multi_set3 = Bag[1, 2, 3]
@@ -161,7 +154,7 @@ class BagTest < Minitest::Test
     refute(multi_set3.superset?(multi_set1))
   end
 
-  def test_proper_superset
+  def test_proper_super
     multi_set1 = Bag[1, 2, 3, 3]
     multi_set2 = Bag[1, 2, 3, 3, 4, 5]
     multi_set3 = Bag[1, 2, 3]
@@ -169,12 +162,12 @@ class BagTest < Minitest::Test
     refute(multi_set3.proper_superset?(multi_set3))
   end
 
-  def test_equality
+  def test_equivalence
     multi_set1 = Bag[1, 2, 3, 3]
     multi_set2 = Bag[1, 2, 3, 3]
     multi_set3 = Bag[1, 2, 3]
-    assert(multi_set1 == multi_set2)
-    refute(multi_set1 == multi_set3)
+    assert(multi_set1.equivalent?(multi_set2))
+    refute(multi_set1.equivalent?(multi_set3))
   end
 
   def test_equality_with_nested_sets_for_Bags
@@ -182,8 +175,18 @@ class BagTest < Minitest::Test
     set2 = Bag.new([1, 2, 0])
     set3 = Bag.new([set1, 1, 2])
     set4 = Bag.new([set2, 1, 2])
-    assert(set1 == set2)
-    assert(set3 == set4)
+    assert(set1.equivalent?(set2))
+    assert(set3.equivalent?(set4))
+  end
+
+  def test_equality_with_double_nesting
+    set1 = Bag.new([0, 1, 2])
+    set2 = Bag.new([1, 2, 0])
+    set3 = Bag.new([set1, 1, 2])
+    set4 = Bag.new([set2, 1, 2])
+    set5 = Bag.new([set3])
+    set6 = Bag.new([set4])
+    assert(set5.equivalent?(set6))
   end
 
   def test_each_with_block
@@ -197,16 +200,38 @@ class BagTest < Minitest::Test
     Bag.new.each.instance_of?(Enumerator)
   end
 
-  def test_map
-    set = Bag[0, 1, 2, 3, 4, 4]
-    mapped = set.map { |elem| elem * 2 }
-    assert_equal(Bag[0, 2, 4, 6, 8, 8], mapped)
+  # def test_map
+  #   set = Bag[0, 1, 2, 3, 4, 4]
+  #   mapped = set.map { |elem| elem * 2 }
+  #   assert_equal(Bag[0, 2, 4, 6, 8, 8], mapped)
+  # end
+
+  # def test_select
+  #   set = Bag[0, 1, 2, 3, 4, 4]
+  #   selected = set.select { |elem| elem.even? }
+  #   assert_equal(Bag[0, 2, 4, 4], selected)
+  # end
+
+  def test_delete_decrements_elem_count
+    set = Bag[1, 2, 3, 3]
+    set.delete(3)
+    assert(set.count(3) == 1)
   end
 
-  def test_select
-    set = Bag[0, 1, 2, 3, 4, 4]
-    selected = set.select { |elem| elem.even? }
-    assert_equal(Bag[0, 2, 4, 4], selected)
+  def test_negative_elem_counts_do_not_occur
+    set = Bag[1, 2, 3]
+    set.delete(1)
+    set.delete(1)
+    expected = 0
+    assert_equal(0, set.count(1))
+  end
+
+  def test_destructive_intersection
+    set = Bag[1, 2, 3]
+    array = [2, 3, 4]
+    set.intersection!(array)
+    expected = Bag[2, 3]
+    assert_equal(expected, set)
   end
 end
 
@@ -237,7 +262,7 @@ class SetTest < Minitest::Test
   def test_equality_is_order_independent
     set1 = Set.new([0, 1, 2])
     set2 = Set.new([1, 2, 0])
-    assert(set1 == set2)
+    assert(set1.equivalent?(set2))
   end
 
   def test_equality_with_nested_sets
@@ -245,8 +270,28 @@ class SetTest < Minitest::Test
     set2 = Set.new([1, 2, 0])
     set3 = Set.new([set1, 1, 2])
     set4 = Set.new([1, set2, 2])
-    assert(set1 == set2)
-    assert(set3 == set4)
+    assert(set1.equivalent?(set2))
+    assert(set3.equivalent?(set4))
+  end
+
+  def test_equality_despite_repetitions
+    set1 = Set.new([0, 1, 2, 2])
+    set2 = Set.new([0, 1, 2])
+    assert(set1.equivalent?(set2))
+
+    set3 = Set.new([set1])
+    set4 = Set.new([set2])
+    assert(set3.equivalent?(set4))
+  end
+
+  def test_equality_with_double_nesting_for_ordinary_sets
+    set1 = Set.new([0, 1, 2])
+    set2 = Set.new([1, 2, 0])
+    set3 = Set.new([set1, 1, 2])
+    set4 = Set.new([set2, 1, 2])
+    set5 = Set.new([set3])
+    set6 = Set.new([set4])
+    assert(set5.equivalent?(set6))
   end
 
   def test_to_s
@@ -259,10 +304,10 @@ class SetTest < Minitest::Test
     assert_equal(expected, set5.to_s)
   end
 
-  def test_proper_superset_is_not_equal
+  def test_proper_super_is_not_equal
     set1 = Set.new([0, 1, 2])
     set2 = Set.new([0, 1, 2, 3])
-    refute(set1 == set2)
+    refute(set1.equivalent?(set2))
   end
 
   def test_add_an_element
@@ -336,19 +381,19 @@ class SetTest < Minitest::Test
     assert_equal(expected, elems)
   end
 
-  def test_select
-    set1 = Set.new([0, 1, 2, 3])
-    set2 = set1.select { |elem| elem.odd? }
-    expected = Set.new([1, 3])
-    assert_equal(expected, set2)
-  end
+  # def test_select
+  #   set1 = Set.new([0, 1, 2, 3])
+  #   set2 = set1.select { |elem| elem.odd? }
+  #   expected = Set.new([1, 3])
+  #   assert_equal(expected, set2)
+  # end
 
-  def test_map
-    set1 = Set.new(['a', 'b', 'c', 'd'])
-    set2 = set1.map { |elem| elem * 2 }
-    expected = Set.new(['aa', 'bb', 'cc', 'dd'])
-    assert_equal(expected, set2)
-  end
+  # def test_map
+  #   set1 = Set.new(['a', 'b', 'c', 'd'])
+  #   set2 = set1.map { |elem| elem * 2 }
+  #   expected = Set.new(['aa', 'bb', 'cc', 'dd'])
+  #   assert_equal(expected, set2)
+  # end
 
   def test_flatten_with_complicated_set
     set1 = Set[1, 2, 3]
@@ -358,5 +403,11 @@ class SetTest < Minitest::Test
     set5 = Set[set4, 4, set1]
     expected = Set[1, 2, 3, 4, 5, 6, 7]
     assert_equal(expected, set5.flatten)
+  end
+
+  def test_delete_makes_elem_count_zero
+    set = Set[1, 2, 3, 3]
+    set.delete(3)
+    assert(set.count(3) == 0)
   end
 end
