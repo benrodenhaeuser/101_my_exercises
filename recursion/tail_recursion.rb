@@ -76,9 +76,3 @@ module TailRecursion
     fibonacci_tail(n, 0, 1)
   end
 end
-
-# difference between head and tail recursion:
-# in tail recursion, the return value of the recursive call is the return value
-# of the current call. so we can throw away the frame for the current call on
-# the runtime stack – we will no longer need it to determine the current return
-# value! ==> key insight that enables tail call optimization.
