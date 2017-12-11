@@ -7,7 +7,7 @@ class NumericMap
     raise ArgumentError unless valid_value?(val)
     @hash[key] = val
   end
-  private :[]=
+  alias update []=
 
   def [](key)
     @hash[key] ? @hash[key] : 0

@@ -19,8 +19,6 @@ class ClassicalSet < NumericMap
     [0, 1].include?(val)
   end
 
-  # (custom methods for this set type)
-
   def each_elem
     return to_enum(:each_elem) unless block_given?
     each_pair { |elem, _| yield(elem) }
@@ -28,5 +26,10 @@ class ClassicalSet < NumericMap
 
   def to_s
     '{' + map { |key, _| key.to_s }.join(', ') + '}'
+  end
+
+  def inspect
+    "#<#{self.class}: {" +
+      map { |key, val| "#{key.inspect}" }.join(', ') + "}>"
   end
 end

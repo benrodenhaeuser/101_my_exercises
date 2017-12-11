@@ -11,7 +11,12 @@ require_relative '../lib/classical_set'
 require_relative '../lib/fuzzy_set'
 
 class NumericMapTest < Minitest::Test
-
+  def test_validation
+    map = NumericMap.new
+    assert_raises ArgumentError do
+      map[3] = 'b'
+    end
+  end
 end
 
 class ClassicalSetTest < Minitest::Test
@@ -180,6 +185,20 @@ class ClassicalSetTest < Minitest::Test
     set5 = ClassicalSet.new([set4, 4, set1])
     expected = '{{{{{1, 2, 3}, 4, 5}, 6, 7}, 1}, 4, {1, 2, 3}}'
     assert_equal(expected, set5.to_s)
+  end
+
+  def test_key_setter_validation
+    set = ClassicalSet.new
+    assert_raises ArgumentError do
+      set[3] = 4
+    end
+  end
+
+  def test_inspect
+    set = ClassicalSet.new([1, 2, 3])
+    actual = set.inspect
+    expected = "#<ClassicalSet: {1, 2, 3}>"
+    assert_equal(expected, actual)
   end
 end
 
@@ -474,6 +493,20 @@ class MultiSetTest < Minitest::Test
     expected = '{({({({({(1: 1), (2: 1), (3: 2)}: 1), (4: 1), (5: 2)}: 1), (6: 2), (7: 1)}: 1), (1: 1)}: 1), (4: 1), ({(1: 1), (2: 1), (3: 2)}: 1)}'
     assert_equal(expected, set5.to_s)
   end
+
+  def test_key_setter_validation
+    set = MultiSet.new
+    assert_raises ArgumentError do
+      set[3] = 0.5
+    end
+  end
+
+  def test_inspect
+    set = MultiSet.new(1 => 2)
+    actual = set.inspect
+    expected = "#<MultiSet: (1: 2)>"
+    assert_equal(expected, actual)
+  end
 end
 
 class FuzzySetTest < Minitest::Test
@@ -482,5 +515,88 @@ class FuzzySetTest < Minitest::Test
     assert_raises ArgumentError do
       set = FuzzySet.new(1 => 10)
     end
+  end
+
+  def test_initialization
+    # skip
+    set1 = FuzzySet.new(3 => 0.5)
+    assert_instance_of(FuzzySet, set1)
+  end
+
+  def test_initialize_with_invalid_argument
+    # skip
+    assert_raises ArgumentError do
+      set1 = FuzzySet.new([1, 2])
+    end
+  end
+
+  def test_add
+    # skip
+    set = FuzzySet.new
+    set.add(3, 0.5)
+    actual = set
+    expected = FuzzySet.new(3 => 0.5)
+    assert_equal(expected, actual)
+  end
+
+  def test_add_with_invalid_value
+    # skip
+    set = FuzzySet.new
+    assert_raises ArgumentError do
+      set.add(4, 10)
+    end
+  end
+
+  def test_delete
+    # skip
+    set = FuzzySet.new
+    set.add(4, 0.2)
+    set.delete(4, 0.1)
+    actual = set
+    expected = FuzzySet.new(4 => 0.1)
+    assert_equal(expected, actual)
+  end
+
+  def test_sum
+    # skip
+    set1 = FuzzySet.new(1 => 0.3, 2 => 0.4)
+    set2 = FuzzySet.new(2 => 0.3, 3 => 0.6)
+    actual = set1.sum(set2)
+    expected = FuzzySet.new(1 => 0.3, 2 => 0.7, 3 => 0.6)
+    assert_equal(expected, actual)
+  end
+
+  def test_sum_is_non_destructive
+    # skip
+    set1 = FuzzySet.new(1 => 0.3, 2 => 0.4)
+    set2 = FuzzySet.new(2 => 0.3, 3 => 0.6)
+    set1.sum(set2)
+    actual = set1
+    expected = FuzzySet.new(1 => 0.3, 2 => 0.4)
+    assert_equal(expected, actual)
+  end
+
+  def test_sum!
+    # skip
+    set1 = FuzzySet.new(1 => 0.3, 2 => 0.4)
+    set2 = FuzzySet.new(2 => 0.3, 3 => 0.6)
+    set1.sum!(set2)
+    actual = set1
+    expected = FuzzySet.new(1 => 0.3, 2 => 0.7, 3 => 0.6)
+    assert_equal(expected, actual)
+  end
+
+  def test_key_setter_validation
+    set = FuzzySet.new
+    assert_raises ArgumentError do
+      set[3] = 4
+    end
+  end
+
+  def test_inspect
+    set = FuzzySet.new(1 => 0.5)
+    actual = set.inspect
+    expected = "#<FuzzySet: (1: 0.5)>"
+    assert_equal(expected, actual)
   end
 end

@@ -1,5 +1,6 @@
 # requires client to implement
-# :add, :delete, :retrieve, :each
+# :update (key setter), :retrieve (key getter), :add (key incrementer), :each
+
 module SetLike
   include Enumerable
 
@@ -19,11 +20,6 @@ module SetLike
 
   def include?(elem)
     keys.include?(elem)
-  end
-
-  def update(key, value)
-    delete(key, retrieve(key))
-    add(key, value) if value > 0
   end
 
   def remove(key)
@@ -100,7 +96,7 @@ module SetLike
     end
   end
 
-  # todo: this really needs to be done some other way.
+  # todo: improve on this
   def intersection(other)
     do_with(other).with_object(self.class.new) do |(key, _), the_intersection|
       the_intersection.update(

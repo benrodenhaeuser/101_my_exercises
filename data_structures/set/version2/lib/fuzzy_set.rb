@@ -27,8 +27,6 @@ class FuzzySet < NumericMap
     (0.0..1.0).include?(val)
   end
 
-  # (custom methods for this set type)
-
   def sum!(other)
     do_with(other) { |key, val| self[key] += val }
     self

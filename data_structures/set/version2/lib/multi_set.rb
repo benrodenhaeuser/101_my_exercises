@@ -1,6 +1,6 @@
 class MultiSet < NumericMap
   include SetLike
-  
+
   def initialize(input = {})
     raise ArgumentError unless input.respond_to?(:each)
     super()
@@ -30,8 +30,6 @@ class MultiSet < NumericMap
   def valid_value?(val)
     val.is_a?(Integer) && val >= 0
   end
-
-  # (custom methods for this set type)
 
   def sum!(other)
     do_with(other) { |key, val| self[key] += val }
