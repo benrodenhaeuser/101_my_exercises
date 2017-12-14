@@ -1,5 +1,5 @@
-# requires class to implement
-# :retrieve, :add, :subtract, :each
+# requires module user to implement
+# :retrieve/:[], :add, :subtract, :each
 
 module SetLike
   include Enumerable
@@ -23,7 +23,7 @@ module SetLike
   alias []= update
 
   def remove(key)
-    self[key] = 0
+    update(key, 0)
   end
 
   def to_s

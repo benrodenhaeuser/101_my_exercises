@@ -10,7 +10,7 @@ class GenericSet
   end
 
   def self.from_hash(hsh)
-    raise TypeError, "Hash needed" unless hsh.instance_of?(Hash)
+    raise(TypeError, "Hash needed") unless hsh.instance_of?(Hash)
     set = new
     hsh.each_pair { |key, val| set.add(key, val) }
     set
@@ -44,14 +44,14 @@ class GenericSet
   alias [] retrieve
 
   def add(key, val = 1)
-    raise ArgumentError, "Invalid value" unless valid_value?(val)
+    raise(ArgumentError, "Invalid value") unless valid_value?(val)
     old_val = self[key]
     @hash[key] = [self[key] + val, max_value].min
     @size += self[key] - old_val
   end
 
   def subtract(key, val = 1)
-    raise ArgumentError, "Invalid value" unless valid_value?(val)
+    raise(ArgumentError, "Invalid value") unless valid_value?(val)
     old_val = self[key]
     @hash[key] = [self[key] - val, min_value].max
     @size -= old_val - self[key]
