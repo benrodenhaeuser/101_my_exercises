@@ -1,10 +1,8 @@
 # requires client to implement
-# :[]=, :[], :insert, :delete, :each
+# :update, :retrieve, :insert, :delete, :each
 
 module SetLike
   include Enumerable
-
-  # preliminaries
 
   def keys
     each.map(&:first)
