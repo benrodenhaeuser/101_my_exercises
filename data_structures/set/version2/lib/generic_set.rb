@@ -1,8 +1,27 @@
 class GenericSet
   include SetLike
 
+  def self.[](*enum)
+    raise ArgumentError unless enum.kind_of?(Enumerable)
+    set = new
+    enum.each { |key| set.insert(key) }
+    set
+  end
+
+  def self.from_hash(hsh)
+    raise ArgumentError unless hsh.instance_of?(Hash)
+    set = new
+    raise ArgumentError unless hsh.values.all? { |val| set.valid_value?(val) }
+    hsh.each_pair { |key, val| set.update(key, val) }
+    set
+  end
+
   def initialize
     @hash = Hash.new
+  end
+
+  def value_type
+    Numeric
   end
 
   def max_value
@@ -14,7 +33,7 @@ class GenericSet
   end
 
   def valid_value?(val)
-    (min_value..max_value).include?(val)
+    (min_value..max_value).include?(val) && val.kind_of?(value_type)
   end
 
   def update(key, val)

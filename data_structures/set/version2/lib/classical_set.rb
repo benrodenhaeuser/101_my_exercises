@@ -1,8 +1,6 @@
 class ClassicalSet < GenericSet
-  def initialize(enum = [])
-    raise ArgumentError unless enum.respond_to?(:each)
-    super()
-    enum.each { |key| insert(key) }
+  def value_type
+    Integer
   end
 
   def max_value
@@ -19,11 +17,11 @@ class ClassicalSet < GenericSet
   end
 
   def to_s
-    '{' + map { |key, _| key.to_s }.join(', ') + '}'
+    '{' + each_elem.map { |key| key.to_s }.join(', ') + '}'
   end
 
   def inspect
     "#<#{self.class}: {" +
-      map { |key, val| "#{key.inspect}" }.join(', ') + "}>"
+      each_elem.map { |key| "#{key.inspect}" }.join(', ') + "}>"
   end
 end
