@@ -1,23 +1,25 @@
+require_relative 'set_like'
+
 class GenericSet
   include SetLike
 
-  def self.[](*enum)
-    raise ArgumentError unless enum.kind_of?(Enumerable)
-    set = new
-    enum.each { |key| set.insert(key) }
-    set
+  attr_reader :size
+
+  def self.[](*list)
+    new(list)
   end
 
   def self.from_hash(hsh)
-    raise ArgumentError unless hsh.instance_of?(Hash)
+    raise TypeError, "Hash needed" unless hsh.instance_of?(Hash)
     set = new
-    raise ArgumentError unless hsh.values.all? { |val| set.valid_value?(val) }
-    hsh.each_pair { |key, val| set.update(key, val) }
+    hsh.each_pair { |key, val| set.add(key, val) }
     set
   end
 
-  def initialize
+  def initialize(list = [])
     @hash = Hash.new
+    @size = 0
+    list.each { |key| add(key) }
   end
 
   def value_type
@@ -36,23 +38,23 @@ class GenericSet
     (min_value..max_value).include?(val) && val.kind_of?(value_type)
   end
 
-  def update(key, val)
-    raise ArgumentError unless valid_value?(val)
-    @hash[key] = val
-  end
-  alias []= update
-
   def retrieve(key)
     @hash[key] ? @hash[key] : 0
   end
   alias [] retrieve
 
-  def insert(key, val = 1)
-    self[key] = [self[key] + val, max_value].min
+  def add(key, val = 1)
+    raise ArgumentError, "Invalid value" unless valid_value?(val)
+    old_val = self[key]
+    @hash[key] = [self[key] + val, max_value].min
+    @size += self[key] - old_val
   end
 
-  def delete(key, val = 1)
-    self[key] = [self[key] - val, min_value].max
+  def subtract(key, val = 1)
+    raise ArgumentError, "Invalid value" unless valid_value?(val)
+    old_val = self[key]
+    @hash[key] = [self[key] - val, min_value].max
+    @size -= old_val - self[key]
   end
 
   def each_pair

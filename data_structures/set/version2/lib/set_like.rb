@@ -1,5 +1,5 @@
-# requires client to implement
-# :update, :retrieve, :insert, :delete, :each
+# requires class to implement
+# :retrieve, :add, :subtract, :each
 
 module SetLike
   include Enumerable
@@ -12,13 +12,15 @@ module SetLike
     each.map(&:last)
   end
 
-  def size
-    values.sum
-  end
-
   def include?(elem)
     keys.include?(elem)
   end
+
+  def update(key, val)
+    subtract(key, self[key])
+    add(key, val)
+  end
+  alias []= update
 
   def remove(key)
     self[key] = 0
@@ -38,7 +40,7 @@ module SetLike
       if key.instance_of?(self.class)
         key.flatten(flat)
       else
-        flat.insert(key, val)
+        flat.add(key, val)
       end
     end
   end
@@ -56,7 +58,7 @@ module SetLike
   # operations with other
 
   def sum!(other)
-    do_with(other) { |key, val| insert(key, val) }
+    do_with(other) { |key, val| add(key, val) }
     self
   end
 

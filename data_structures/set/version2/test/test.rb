@@ -32,10 +32,10 @@ class ClassicalSetTest < Minitest::Test
     assert_equal(expected_values, actual_values)
   end
 
-  def test_inserting_element_already_present_does_not_affect_size
+  def test_adding_element_already_present_does_not_affect_size
     # skip
     set = ClassicalSet[0, 1, 2]
-    set.insert(1)
+    set.add(1)
     actual = set.size
     expected = 3
     assert_equal(expected, actual)
@@ -87,18 +87,18 @@ class ClassicalSetTest < Minitest::Test
     refute(set1.equivalent?(set2))
   end
 
-  def test_insert_an_element
+  def test_add_an_element
     # skip
     set1 = ClassicalSet[0, 1, 2]
-    set1.insert(3)
+    set1.add(3)
     expected = ClassicalSet[0, 1, 3, 2]
     assert_equal(expected, set1)
   end
 
-  def test_delete_an_element
+  def test_subtract_an_element
     # skip
     set1 = ClassicalSet[0, 1, 2]
-    set1.delete(2)
+    set1.subtract(2)
     actual = set1
     expected = ClassicalSet[0, 1]
     assert_equal(expected, actual)
@@ -122,7 +122,7 @@ class ClassicalSetTest < Minitest::Test
     assert_equal(expected, actual)
   end
 
-  def test_intersection!
+  def test_intersection_2
     # skip
     set1 = ClassicalSet[1, 2, 3]
     set2 = ClassicalSet[1, 2, 3, 4, 5, 6]
@@ -149,8 +149,7 @@ class ClassicalSetTest < Minitest::Test
     assert_equal(expected, set1.difference(set2))
   end
 
-  def test_union
-    # skip
+  def test_union2    # skip
     set1 = ClassicalSet[1, 2, 3]
     set2 = ClassicalSet[4, 5, 6]
     expected = ClassicalSet[1, 2, 3, 4, 5, 6]
@@ -224,17 +223,24 @@ class ClassicalSetTest < Minitest::Test
     actual = set1
     assert_equal(expected, actual)
   end
+
+  def test_size
+    set = ClassicalSet[1, 2, 3]
+    actual = set.size
+    expected = set.values.sum
+    assert_equal(expected, actual)
+  end
 end
 
 class MultiSetTest < Minitest::Test
-  def test_initializing_with_invalid_hash_raises_exception
+  def test_initializing_with_invalid_hash_raises_exception_fuzzy
     # skip
     assert_raises ArgumentError do
-      set = MultiSet.from_hash(1 => -5)
+      MultiSet.from_hash(1 => 0.5)
     end
   end
 
-  def test_each_elem
+  def test_each_elem_2
     # skip
     set = MultiSet.from_hash(1 => 1, 2 => 1, 3 => 2)
     actual = set.each_elem.to_a
@@ -265,10 +271,10 @@ class MultiSetTest < Minitest::Test
     assert_equal(expected, actual)
   end
 
-  def test_delete
+  def test_subtract
     # skip
     multi_set = MultiSet.from_hash(1 => 1, 2 => 1, 3 => 2)
-    multi_set.delete(3)
+    multi_set.subtract(3)
     actual = multi_set
     expected = MultiSet.from_hash(1 => 1, 2 => 1, 3 => 1)
     assert_equal(expected, actual)
@@ -284,7 +290,7 @@ class MultiSetTest < Minitest::Test
     assert_equal(expected, actual)
   end
 
-  def test_union!
+  def test_union2
     # skip
     multi_set1 = MultiSet.from_hash(1 => 1, 2 => 1, 3 => 2)
     multi_set2 = MultiSet.from_hash(2 => 1, 4 => 1)
@@ -294,7 +300,7 @@ class MultiSetTest < Minitest::Test
     assert_equal(expected, actual)
   end
 
-  def test_difference!
+  def test_difference3
     # skip
     multi_set1 = MultiSet.from_hash(1 => 1, 2 => 1, 3 => 2)
     multi_set2 = MultiSet.from_hash(3 => 3)
@@ -322,7 +328,7 @@ class MultiSetTest < Minitest::Test
     assert_equal(expected, actual)
   end
 
-  def test_union
+  def test_union3
     # skip
     multi_set1 = MultiSet.from_hash(1 => 1, 2 => 1, 3 => 2)
     multi_set2 = MultiSet.from_hash(2 => 1, 4 => 1)
@@ -341,7 +347,7 @@ class MultiSetTest < Minitest::Test
     assert_equal(expected, actual)
   end
 
-  def test_intersection
+  def test_intersection_3
     # skip
     multi_set1 = MultiSet.from_hash(1 => 1, 2 => 1, 3 => 2)
     multi_set2 = MultiSet.from_hash(3 => 3)
@@ -350,7 +356,7 @@ class MultiSetTest < Minitest::Test
     assert_equal(expected, actual)
   end
 
-  def test_difference
+  def test_difference4
     # skip
     multi_set1 = MultiSet.from_hash(1 => 1, 2 => 1, 3 => 2)
     multi_set2 = MultiSet.from_hash(3 => 3)
@@ -435,7 +441,7 @@ class MultiSetTest < Minitest::Test
     assert(set5.equivalent?(set6))
   end
 
-  def test_each_elem_with_a_block
+  def test_each_elem_3
     # skip
     multi_set = MultiSet[1, 2, 3, 3]
     array = []
@@ -448,18 +454,18 @@ class MultiSetTest < Minitest::Test
     MultiSet.new.each.instance_of?(Enumerator)
   end
 
-  def test_delete_decrements_elem_count
+  def test_subtract_decrements_elem_count
     # skip
     set = MultiSet[1, 2, 3, 3]
-    set.delete(3)
+    set.subtract(3)
     assert_equal(set.retrieve(3), 1)
   end
 
   def test_negative_elem_counts_do_not_occur
     # skip
     set = MultiSet[1, 2, 3]
-    set.delete(1)
-    set.delete(1)
+    set.subtract(1)
+    set.subtract(1)
     expected = 0
     assert_equal(0, set.retrieve(1))
   end
@@ -532,10 +538,10 @@ class MultiSetTest < Minitest::Test
     end
   end
 
-  def test_insert_raises_exception_with_fraction
+  def test_add_raises_exception_with_fraction
     set = MultiSet.new
     assert_raises ArgumentError do
-      set.insert(1, 0.5)
+      set.add(1, 0.5)
     end
   end
 
@@ -551,10 +557,17 @@ class MultiSetTest < Minitest::Test
     expected = MultiSet.from_hash(1 => 2)
     assert_equal(expected, actual)
   end
+
+  def test_size_2
+    set = MultiSet.from_hash(1 => 1, 2 => 1, 3 => 2, 4 => 1, 5 => 1)
+    actual = set.size
+    expected = set.values.sum
+    assert_equal(expected, actual)
+  end
 end
 
 class FuzzySetTest < Minitest::Test
-  def test_initializing_with_invalid_hash_raises_exception
+  def test_initializing_with_invalid_hash_raises_exception_fuzzy
     # skip
     assert_raises ArgumentError do
       set = FuzzySet.from_hash(1 => 10)
@@ -567,10 +580,10 @@ class FuzzySetTest < Minitest::Test
     assert_instance_of(FuzzySet, set1)
   end
 
-  def test_insert
+  def test_add
     # skip
     set = FuzzySet.new
-    set.insert(3, 0.5)
+    set.add(3, 0.5)
     actual = set
     expected = FuzzySet.from_hash(3 => 0.5)
     assert_equal(expected, actual)
@@ -583,27 +596,26 @@ class FuzzySetTest < Minitest::Test
     end
   end
 
-  def test_insert_is_bounded_addition
+  def test_invalid_fuzzy_member_added
     # skip
     set = FuzzySet.new
-    set.insert(4, 10)
-    actual = set
-    expected = FuzzySet.from_hash(4 => 1)
-    assert_equal(expected, actual)
-  end
-
-  def test_insert_with_invalid_value_2
-    set = FuzzySet.new
     assert_raises ArgumentError do
-      set.insert(4, -1)
+      set.add(4, 10)
     end
   end
 
-  def test_delete
+  def test_add_with_invalid_value_2
+    set = FuzzySet.new
+    assert_raises ArgumentError do
+      set.add(4, -1)
+    end
+  end
+
+  def test_subtract
     # skip
     set = FuzzySet.new
-    set.insert(4, 0.2)
-    set.delete(4, 0.1)
+    set.add(4, 0.2)
+    set.subtract(4, 0.1)
     actual = set
     expected = FuzzySet.from_hash(4 => 0.1)
     assert_equal(expected, actual)
@@ -649,6 +661,24 @@ class FuzzySetTest < Minitest::Test
     set = FuzzySet.from_hash(1 => 0.5)
     actual = set.inspect
     expected = "#<FuzzySet: (1: 0.5)>"
+    assert_equal(expected, actual)
+  end
+
+  def test_size_3
+    set = FuzzySet.from_hash(1 => 0.3, 2 => 0.4)
+    actual = set.size
+    expected = set.values.sum
+    assert_equal(expected, actual)
+  end
+
+  # TODO: fails
+  def test_size_with_deletions
+    set = FuzzySet.from_hash(1 => 0.3, 2 => 0.4)
+    set.subtract(1, 0.2)
+    set.add(5, 0.4)
+    set.subtract(5, 0.2)
+    actual = set.size
+    expected = set.values.sum
     assert_equal(expected, actual)
   end
 end
