@@ -1,39 +1,16 @@
-class FuzzySet < NumericMap
-  include SetLike
-
-  def initialize(hsh = {})
-    raise ArgumentError unless valid_hash?(hsh)
+class FuzzySet < GenericSet
+  def initialize(input = {})
+    raise ArgumentError unless input.instance_of?(Hash)
+    raise ArgumentError unless input.values.all? { |val| valid_value?(val) }
     super()
-    hsh.each_pair { |key, val| self[key] = val }
+    input.each_pair { |key, val| self[key] = val }
   end
 
-  def valid_hash?(hsh)
-    hsh.instance_of?(Hash) &&
-      hsh.values.all? { |val| valid_value?(val) }
-  end
-  private :valid_hash?
-
-  def add(key, degree = 1)
-    raise ArgumentError unless valid_value?(degree)
-    self[key] = [self[key] + degree, 1].min
+  def max_value
+    1.0
   end
 
-  def delete(key, degree = 1)
-    raise ArgumentError unless valid_value?(degree)
-    self[key] = [self[key] - degree, 0].max
+  def min_value
+    0.0
   end
-
-  def valid_value?(val)
-    (0.0..1.0).include?(val)
-  end
-
-  def sum!(other)
-    do_with(other) { |key, val| self[key] += val }
-    self
-  end
-
-  def sum(other)
-    dup.sum!(other)
-  end
-  alias + sum
 end

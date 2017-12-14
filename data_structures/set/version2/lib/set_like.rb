@@ -1,5 +1,5 @@
 # requires client to implement
-# :update (key setter), :retrieve (key getter), :add (key incrementer), :each
+# :[]=, :[], :insert, :delete, :each
 
 module SetLike
   include Enumerable
@@ -23,7 +23,7 @@ module SetLike
   end
 
   def remove(key)
-    update(key, 0)
+    self[key] = 0
   end
 
   def to_s
@@ -40,7 +40,7 @@ module SetLike
       if key.instance_of?(self.class)
         key.flatten(flat)
       else
-        flat.add(key, val)
+        flat.insert(key, val)
       end
     end
   end
@@ -57,12 +57,19 @@ module SetLike
 
   # operations with other
 
+  def sum!(other)
+    do_with(other) { |key, val| insert(key, val) }
+    self
+  end
+
+  def sum(other)
+    dup.sum!(other)
+  end
+  alias + sum
+
   def union!(other)
     do_with(other) do |key, _|
-      update(
-        key,
-        [retrieve(key), other.retrieve(key)].max
-      )
+      self[key] = [self[key], other[key]].max
     end
     self
   end
@@ -74,10 +81,7 @@ module SetLike
 
   def difference!(other)
     do_with(other) do |key, _|
-      update(
-        key,
-        [0, retrieve(key) - other.retrieve(key)].max
-      )
+      self[key] = [0, self[key] - other[key]].max
     end
     self
   end
@@ -89,20 +93,14 @@ module SetLike
 
   def intersection!(other)
     each do |key, _|
-      update(
-        key,
-        intersection(other).retrieve(key)
-      )
+      self[key] = intersection(other)[key]
     end
   end
 
-  # todo: improve on this
+  # TODO: improve on this
   def intersection(other)
     do_with(other).with_object(self.class.new) do |(key, _), the_intersection|
-      the_intersection.update(
-        key,
-        [retrieve(key), other.retrieve(key)].min
-      )
+      the_intersection[key] = [self[key], other[key]].min
     end
   end
   alias & intersection
@@ -121,7 +119,7 @@ module SetLike
     return false unless other.instance_of?(self.class)
 
     all? do |key, _|
-      retrieve(key) <= other.retrieve(key)
+      self[key] <= other[key]
     end
   end
   alias <= subset?

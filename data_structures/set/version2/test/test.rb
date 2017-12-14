@@ -1,18 +1,18 @@
-require 'simplecov'
-SimpleCov.root ".."
-SimpleCov.start
+# require 'simplecov'
+# SimpleCov.root ".."
+# SimpleCov.start
 
 require 'minitest/autorun'
 
-require_relative '../lib/numeric_map'
 require_relative '../lib/set_like'
+require_relative '../lib/generic_set'
 require_relative '../lib/multi_set'
 require_relative '../lib/classical_set'
 require_relative '../lib/fuzzy_set'
 
-class NumericMapTest < Minitest::Test
+class GenericSetTest < Minitest::Test
   def test_validation
-    map = NumericMap.new
+    map = GenericSet.new
     assert_raises ArgumentError do
       map[3] = 'b'
     end
@@ -32,10 +32,10 @@ class ClassicalSetTest < Minitest::Test
     assert_equal(expected_values, actual_values)
   end
 
-  def test_adding_element_already_present_does_not_affect_size
+  def test_inserting_element_already_present_does_not_affect_size
     # skip
     set = ClassicalSet.new([0, 1, 2])
-    set.add(1)
+    set.insert(1)
     actual = set.size
     expected = 3
     assert_equal(expected, actual)
@@ -87,10 +87,10 @@ class ClassicalSetTest < Minitest::Test
     refute(set1.equivalent?(set2))
   end
 
-  def test_add_an_element
+  def test_insert_an_element
     # skip
     set1 = ClassicalSet.new([0, 1, 2])
-    set1.add(3)
+    set1.insert(3)
     expected = ClassicalSet.new([0, 1, 3, 2])
     assert_equal(expected, set1)
   end
@@ -99,10 +99,12 @@ class ClassicalSetTest < Minitest::Test
     # skip
     set1 = ClassicalSet.new([0, 1, 2])
     set1.delete(2)
-    assert_equal(ClassicalSet.new([0, 1]), set1)
+    actual = set1
+    expected = ClassicalSet.new([0, 1])
+    assert_equal(expected, actual)
   end
 
-  def test_delete_is_like_remove_for_classical_sets
+  def test_remove_an_element
     # skip
     set1 = ClassicalSet.new([0, 1, 2, 2])
     set1.remove(2)
@@ -194,10 +196,25 @@ class ClassicalSetTest < Minitest::Test
     end
   end
 
+  def test_key_setter_validation_2
+    set = ClassicalSet.new
+    assert_raises ArgumentError do
+      set[3] = -1
+    end
+  end
+
   def test_inspect
     set = ClassicalSet.new([1, 2, 3])
     actual = set.inspect
     expected = "#<ClassicalSet: {1, 2, 3}>"
+    assert_equal(expected, actual)
+  end
+
+  def test_sum_is_union_for_classical_sets
+    set1 = ClassicalSet.new([1, 2, 3])
+    set2 = ClassicalSet.new([2, 3, 4])
+    actual = set1.sum(set2)
+    expected = set1.union(set2)
     assert_equal(expected, actual)
   end
 end
@@ -424,7 +441,7 @@ class MultiSetTest < Minitest::Test
     MultiSet.new.each.instance_of?(Enumerator)
   end
 
-  def test_remove_decrements_elem_count
+  def test_delete_decrements_elem_count
     # skip
     set = MultiSet.new([1, 2, 3, 3])
     set.delete(3)
@@ -501,6 +518,20 @@ class MultiSetTest < Minitest::Test
     end
   end
 
+  def test_key_setter_validation_2
+    set = MultiSet.new
+    assert_raises ArgumentError do
+      set[3] = -10
+    end
+  end
+
+  def test_insert_raises_exception_with_fraction
+    set = MultiSet.new
+    assert_raises ArgumentError do
+      set.insert(1, 0.5)
+    end 
+  end
+
   def test_inspect
     set = MultiSet.new(1 => 2)
     actual = set.inspect
@@ -530,27 +561,42 @@ class FuzzySetTest < Minitest::Test
     end
   end
 
-  def test_add
+  def test_insert
     # skip
     set = FuzzySet.new
-    set.add(3, 0.5)
+    set.insert(3, 0.5)
     actual = set
     expected = FuzzySet.new(3 => 0.5)
     assert_equal(expected, actual)
   end
 
-  def test_add_with_invalid_value
-    # skip
+  def update_with_invalid_value_raises_exception
     set = FuzzySet.new
     assert_raises ArgumentError do
-      set.add(4, 10)
+      set.update(4, 10)
+    end
+  end
+
+  def test_insert_is_bounded_addition
+    # skip
+    set = FuzzySet.new
+    set.insert(4, 10)
+    actual = set
+    expected = FuzzySet.new(4 => 1)
+    assert_equal(expected, actual)
+  end
+
+  def test_insert_with_invalid_value_2
+    set = FuzzySet.new
+    assert_raises ArgumentError do
+      set.insert(4, -1)
     end
   end
 
   def test_delete
     # skip
     set = FuzzySet.new
-    set.add(4, 0.2)
+    set.insert(4, 0.2)
     set.delete(4, 0.1)
     actual = set
     expected = FuzzySet.new(4 => 0.1)

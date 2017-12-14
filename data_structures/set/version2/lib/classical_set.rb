@@ -1,22 +1,16 @@
-class ClassicalSet < NumericMap
-  include SetLike
-
+class ClassicalSet < GenericSet
   def initialize(enum = [])
     raise ArgumentError unless enum.respond_to?(:each)
     super()
-    enum.each { |key| add(key) }
+    enum.each { |key| insert(key) }
   end
 
-  def add(key, _ = 1)
-    self[key] = 1
+  def max_value
+    1
   end
 
-  def delete(key, _ = 1)
-    self[key] = 0
-  end
-
-  def valid_value?(val)
-    [0, 1].include?(val)
+  def min_value
+    0
   end
 
   def each_elem
