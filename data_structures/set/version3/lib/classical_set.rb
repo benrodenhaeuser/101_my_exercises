@@ -1,3 +1,5 @@
+require_relative 'generic_set'
+
 class ClassicalSet < GenericSet
   def initialize
     super(Integer, 0, 1)
