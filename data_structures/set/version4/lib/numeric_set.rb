@@ -1,7 +1,19 @@
 require_relative 'set_like'
 
-class GenericSet
+class NumericSet
   include SetLike
+
+  @value_type = Numeric
+  @min_value = -Float::INFINITY
+  @max_value = Float::INFINITY
+
+  class << self
+    attr_reader :value_type, :min_value, :max_value
+  end
+
+  def self.valid_value?(val)
+    (@min_value..@max_value).cover?(val) && val.is_a?(@value_type)
+  end
 
   def self.[](*list)
     set = new
@@ -16,15 +28,9 @@ class GenericSet
     set
   end
 
-  def initialize(type, min, max)
+  def initialize
     @hash = {}
     @size = 0
-    @value_type = type
-    @min_value, @max_value = min, max
-  end
-
-  def valid_value?(val)
-    (@min_value..@max_value).cover?(val) && val.is_a?(@value_type)
   end
 
   attr_reader :size
@@ -35,16 +41,16 @@ class GenericSet
   alias [] retrieve
 
   def insert(key, val = 1)
-    raise(ArgumentError, 'Invalid value') unless valid_value?(val)
+    raise(ArgumentError, 'Invalid value') unless self.class.valid_value?(val)
     old_val = self[key]
-    @hash[key] = [self[key] + val, @max_value].min
+    @hash[key] = [self[key] + val, self.class.max_value].min
     @size = (@size + (self[key] - old_val)).round(1)
   end
 
   def remove(key, val = 1)
-    raise(ArgumentError, 'Invalid value') unless valid_value?(val)
+    raise(ArgumentError, 'Invalid value') unless self.class.valid_value?(val)
     old_val = self[key]
-    @hash[key] = [self[key] - val, @min_value].max
+    @hash[key] = [self[key] - val, self.class.min_value].max
     @size = (@size - (old_val - self[key])).round(2)
   end
 

@@ -1,7 +1,7 @@
 {
   "MiniTest": {
     "coverage": {
-      "/Users/rodenhaeuser/Dropbox/Documents/Code/launchschool/algorithms_repo/data_structures/set/version3/lib/set_like.rb": [
+      "/Users/rodenhaeuser/Dropbox/Documents/Code/launchschool/algorithms_repo/data_structures/set/version4/lib/set_like.rb": [
         null,
         null,
         null,
@@ -154,11 +154,23 @@
         1,
         null
       ],
-      "/Users/rodenhaeuser/Dropbox/Documents/Code/launchschool/algorithms_repo/data_structures/set/version3/lib/generic_set.rb": [
+      "/Users/rodenhaeuser/Dropbox/Documents/Code/launchschool/algorithms_repo/data_structures/set/version4/lib/numeric_set.rb": [
         1,
         null,
         1,
         1,
+        null,
+        1,
+        1,
+        1,
+        null,
+        1,
+        1,
+        null,
+        null,
+        1,
+        789,
+        null,
         null,
         1,
         106,
@@ -176,12 +188,6 @@
         1,
         207,
         207,
-        207,
-        207,
-        null,
-        null,
-        1,
-        789,
         null,
         null,
         1,
@@ -223,22 +229,22 @@
         null,
         null
       ],
-      "/Users/rodenhaeuser/Dropbox/Documents/Code/launchschool/algorithms_repo/data_structures/set/version3/lib/multi_set.rb": [
+      "/Users/rodenhaeuser/Dropbox/Documents/Code/launchschool/algorithms_repo/data_structures/set/version4/lib/multi_set.rb": [
         1,
         null,
         1,
         1,
-        111,
-        null,
+        1,
+        1,
         null
       ],
-      "/Users/rodenhaeuser/Dropbox/Documents/Code/launchschool/algorithms_repo/data_structures/set/version3/lib/classical_set.rb": [
+      "/Users/rodenhaeuser/Dropbox/Documents/Code/launchschool/algorithms_repo/data_structures/set/version4/lib/classical_set.rb": [
         1,
         null,
         1,
         1,
-        71,
-        null,
+        1,
+        1,
         null,
         1,
         6,
@@ -249,16 +255,16 @@
         null,
         null
       ],
-      "/Users/rodenhaeuser/Dropbox/Documents/Code/launchschool/algorithms_repo/data_structures/set/version3/lib/fuzzy_set.rb": [
+      "/Users/rodenhaeuser/Dropbox/Documents/Code/launchschool/algorithms_repo/data_structures/set/version4/lib/fuzzy_set.rb": [
         1,
         null,
         1,
         1,
-        24,
-        null,
+        1,
+        1,
         null
       ]
     },
-    "timestamp": 1513358504
+    "timestamp": 1513370809
   }
 }
