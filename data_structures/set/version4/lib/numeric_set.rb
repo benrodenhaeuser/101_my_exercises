@@ -33,7 +33,9 @@ class NumericSet
     @size = 0
   end
 
-  attr_reader :size
+  def size
+    @size
+  end
 
   def retrieve(key)
     @hash[key] ? @hash[key] : 0
