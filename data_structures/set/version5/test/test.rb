@@ -5,16 +5,16 @@
 require 'minitest/autorun'
 
 require_relative '../lib/set_like'
-require_relative '../lib/numeric_set'
+require_relative '../lib/set_map'
 require_relative '../lib/multi_set'
 require_relative '../lib/classical_set'
 require_relative '../lib/fuzzy_set'
 
-class NumericSetTest < Minitest::Test
-  def test_validation
-    map = NumericSet.new
-    assert_raises ArgumentError do
-      map[3] = 'b'
+class SetMapTest < Minitest::Test
+  def inserting_raises_exception
+    set = SetMap.new
+    assert_raises SetError do
+      set.insert(1)
     end
   end
 end
@@ -177,37 +177,18 @@ class ClassicalSetTest < Minitest::Test
     assert_equal(expected, actual)
   end
 
-  def test_to_s_for_classical_set
-    # skip
-    set1 = ClassicalSet[1, 2, 3]
-    set2 = ClassicalSet[set1, 4, 5]
-    set3 = ClassicalSet[set2, 6, 7]
-    set4 = ClassicalSet[set3, 1]
-    set5 = ClassicalSet[set4, 4, set1]
-    actual = set5.to_s
-    expected = '{{{{{1, 2, 3}, 4, 5}, 6, 7}, 1}, 4, {1, 2, 3}}'
-    assert_equal(expected, actual)
-  end
-
   def test_key_setter_validation
     set = ClassicalSet.new
-    assert_raises ArgumentError do
+    assert_raises SetError do
       set[3] = 4
     end
   end
 
   def test_key_setter_validation_2
     set = ClassicalSet.new
-    assert_raises ArgumentError do
+    assert_raises SetError do
       set[3] = -1
     end
-  end
-
-  def test_inspect_for_classical_set
-    set = ClassicalSet[1, 2, 3]
-    actual = set.inspect
-    expected = "#<ClassicalSet: {1, 2, 3}>"
-    assert_equal(expected, actual)
   end
 
   def test_sum_is_union_for_classical_sets
@@ -231,12 +212,20 @@ class ClassicalSetTest < Minitest::Test
     expected = set.values.sum
     assert_equal(expected, actual)
   end
+
+  def test_error_with_different_set_types
+    set1 = ClassicalSet[1, 2, 3]
+    set2 = FuzzySet[1, 2, 3]
+    assert_raises SetError do
+      set1.union(set2)
+    end
+  end
 end
 
 class MultiSetTest < Minitest::Test
   def test_initializing_with_invalid_hash_raises_exception_fuzzy
     # skip
-    assert_raises ArgumentError do
+    assert_raises SetError do
       MultiSet.from_hash(1 => 0.5)
     end
   end
@@ -534,21 +523,21 @@ class MultiSetTest < Minitest::Test
 
   def test_key_setter_validation
     set = MultiSet.new
-    assert_raises ArgumentError do
+    assert_raises SetError do
       set[3] = 0.5
     end
   end
 
   def test_key_setter_validation_2
     set = MultiSet.new
-    assert_raises ArgumentError do
+    assert_raises SetError do
       set[3] = -10
     end
   end
 
   def test_insert_raises_exception_with_fraction
     set = MultiSet.new
-    assert_raises ArgumentError do
+    assert_raises SetError do
       set.insert(1, 0.5)
     end
   end
@@ -556,7 +545,7 @@ class MultiSetTest < Minitest::Test
   def test_inspect_for_multiset
     set = MultiSet.from_hash(1 => 2)
     actual = set.inspect
-    expected = "#<MultiSet: (1: 2)>"
+    expected = "#<MultiSet: {1: 2}>"
     assert_equal(expected, actual)
   end
 
@@ -577,7 +566,7 @@ end
 class FuzzySetTest < Minitest::Test
   def test_initializing_with_invalid_hash_raises_exception_fuzzy
     # skip
-    assert_raises ArgumentError do
+    assert_raises SetError do
       set = FuzzySet.from_hash(1 => 10)
     end
   end
@@ -599,7 +588,7 @@ class FuzzySetTest < Minitest::Test
 
   def update_with_invalid_value_raises_exception
     set = FuzzySet.new
-    assert_raises ArgumentError do
+    assert_raises SetError do
       set.update(4, 10)
     end
   end
@@ -607,14 +596,14 @@ class FuzzySetTest < Minitest::Test
   def test_invalid_fuzzy_member_inserted
     # skip
     set = FuzzySet.new
-    assert_raises ArgumentError do
+    assert_raises SetError do
       set.insert(4, 10)
     end
   end
 
   def test_insert_with_invalid_value_2
     set = FuzzySet.new
-    assert_raises ArgumentError do
+    assert_raises SetError do
       set.insert(4, -1)
     end
   end
@@ -660,7 +649,7 @@ class FuzzySetTest < Minitest::Test
 
   def test_key_setter_validation
     set = FuzzySet.new
-    assert_raises ArgumentError do
+    assert_raises SetError do
       set[3] = 4
     end
   end
@@ -668,7 +657,7 @@ class FuzzySetTest < Minitest::Test
   def test_inspect_for_fuzzy_set
     set = FuzzySet.from_hash(1 => 0.5)
     actual = set.inspect
-    expected = "#<FuzzySet: (1: 0.5)>"
+    expected = "#<FuzzySet: {1: 0.5}>"
     assert_equal(expected, actual)
   end
 
