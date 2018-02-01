@@ -1,4 +1,4 @@
-# idea: use splat operator to reverse array
+# use splat operator to reverse array
 
 def reverse(array)
   new_array = []
